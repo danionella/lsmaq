@@ -63,7 +63,11 @@ This file defines the startup scan and grab properties. You can modify this file
 | `zoom` | Image zoom. Higher values result in smaller image sizes. Keep in mind that scanning speed may have to be lowered for lowest zoom levels (highest scan amplitudes). The zoom can also be set by using the scroll wheel in the UI. Example: If `scanAmp = [1 1]` and `zoom = 2`, the output voltage range to the X galvo will be -0.5V to +0.5V (the output voltage range to the Y galvo depends on the image size in pixels, as the pixel aspect ratio is kept at 1 when both scanAmp values are the same).
 
 ## Quick start
-Type `lsmaq` to run. This should open a property window and one or more channel windows. To control lsmaq from teh command line, use this alternative way to start lsmaq: `[rig, prop, hIm] = lsmaq;`. This will allow you to do the following:
+Type `lsmaq` to run. This should open a property window and one or more channel windows. Start scanning by pressing the play button. Grab with the record button. 
+
+![alt text](gui.png)
+
+To control lsmaq from the command line, use this alternative way to start lsmaq: `[rig, prop, hIm] = lsmaq;`. This will allow you to do the following:
 - You can adjust scan and grab properties (`prop.scancfg` and `prop.grabcfg`) using your own code. For example, type `prop.scancfg.zoom = 4` in the matlab prompt. This will immediately adjust the UI. The link is bidirectional. If you change a property in the UI, it will be updated in `prop`.
 - You can start scanning using command-line. Type `data = grabStream(rig, prop, hIm);` to grab data using the properties in prop (this will display data while it is acquired. To run entirely without UI, omit the third parameter and type `data = grabStream(rig, prop);`)
 
