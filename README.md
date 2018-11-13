@@ -4,7 +4,7 @@ LSMAQ is a lightweight laser scanning microscope acquisition software package wr
 ## Should I use it?
 If you are an end user of laser scanning microscopes, you will most likely be well served by existing software packages like [ScanImage](http://scanimage.vidriotechnologies.com). LSMAQ was developed by microscope developers aiming for maximum flexibility and ease of customisation. Scripting and quick code modification are facilitated by a clear separation between scanning engine and UI frontend, as well as a lightweight and minimal code base. Adding a new custom property to the UI takes a single line.
 
-Present uses include tiled volume acquisition, flexible piezo-based scanning and phase-stepping for wavefront shaping / [deep imaging](https://doi.org/10.1038/nphoton.2016.252). LSMAQ supports galvo-based scanning but does not (yet) support resonant scanners.
+Present uses include tiled volume acquisition, arbitrary plane piezo-based scanning and phase-stepping for wavefront shaping / [deep imaging](https://doi.org/10.1038/nphoton.2016.252). LSMAQ supports galvo-based scanning but does not (yet) support resonant scanners.
 
 ## Requirements
 - MATLAB (tested with version 2018b, earlier versions since 2009a likely supported)
@@ -63,7 +63,11 @@ This file defines the startup scan and grab properties. You can modify this file
 | `zoom` | Image zoom. Higher values result in smaller image sizes. Keep in mind that scanning speed may have to be lowered for lowest zoom levels (highest scan amplitudes). The zoom can also be set by using the scroll wheel in the UI. Example: If `scanAmp = [1 1]` and `zoom = 2`, the output voltage range to the X galvo will be -0.5V to +0.5V (the output voltage range to the Y galvo depends on the image size in pixels, as the pixel aspect ratio is kept at 1 when both scanAmp values are the same).
 
 ## Quick start
-Type `lsmaq` to run. This should open a property window and one or more channel windows. To control lsmaq from teh command line, use this alternative way to start lsmaq: `[rig, prop, hIm] = lsmaq;`. This will allow you to do the following:
+Type `lsmaq` to run. This should open a property window and one or more channel windows. Start scanning by pressing the play button. Grab with the record button. 
+
+![alt text](gui.png)
+
+To control lsmaq from the command line, use this alternative way to start lsmaq: `[rig, prop, hIm] = lsmaq;`. This will allow you to do the following:
 - You can adjust scan and grab properties (`prop.scancfg` and `prop.grabcfg`) using your own code. For example, type `prop.scancfg.zoom = 4` in the matlab prompt. This will immediately adjust the UI. The link is bidirectional. If you change a property in the UI, it will be updated in `prop`.
 - You can start scanning using command-line. Type `data = grabStream(rig, prop, hIm);` to grab data using the properties in prop (this will display data while it is acquired. To run entirely without UI, omit the third parameter and type `data = grabStream(rig, prop);`)
 
