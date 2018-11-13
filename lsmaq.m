@@ -33,7 +33,7 @@ statusBar = [];
 updateStatus(NaN, 'starting up...')
 
 %starting rig
-rig = rigClass(prop, @updateStatus);
+rig = rigClass(@updateStatus);
 
 %create channel figures
 for i=1:double(rig.AItask.AIChannels.Count)

@@ -3,6 +3,18 @@ classdef rigClass < dynamicprops
     %rigClass holds all the variables linked with the setup (Analog I/O channels, triggers etc.)
     %
     
+    
+    properties (Constant) %check these
+        AIrate = 1250000;
+        AOrate = 250000;
+        AIchans = 'Dev5/ai0:1';
+        shutterline = '/Dev5/PFI1';
+        AOchans = {'Dev5/ao0:1', 'Dev4/ao0:2'};
+        channelOrder = {[1 2], [1 2 5]};             % assign [X,Y,Z,Blank,Phase] signals (in that order, 1-based indexing) to output channels. To assign X to the first output channel, Y to the second and blank to the third, use [1 2 4]
+        stageCOMPort = 'COM10';
+        stage_uSteps_um = [10 10 25];
+    end
+    
     properties
         AItask
         AIreader
@@ -12,10 +24,6 @@ classdef rigClass < dynamicprops
         TriggerTask
         ShutterTask
         ShutterWriter
-        channelOrder
-        AIrate
-        AOrate
-        
         stage
         isScanning = false;
     end
@@ -25,18 +33,9 @@ classdef rigClass < dynamicprops
         %rigClass is a function that generates an object "obj" that defines extra dynamic properties
         % where is fStatus?
         
-        function obj = rigClass(prop, fStatus)
-            obj.AIrate = 1250000;
-            obj.AOrate = 250000;
-            shutterline = '/Dev5/PFI1';
-            AIchans = 'Dev5/ai0:1';
-            AOchans = {'Dev5/ao0:1', 'Dev4/ao0:2'};
-            obj.channelOrder = {[1 2], [1 2 5]};             % assign [X,Y,Z,Blank,Phase] signals (in that order, 1-based indexing) to output channels. To assign X to the first output channel, Y to the second and blank to the third, use [1 2 4]
-            stageCOMPort = 'COM10';
-            stage_uSteps_um = [10 10 25];
-            
+        function obj = rigClass(fStatus)
             if nargin < 1
-                fprintf(1, 'Starting up rig: ');
+                fprintf(1, 'Starting up rig:    ');
                 fStatus = @(fraction, text) fprintf(1, '\b\b\b%02.0f%%', fraction*100);
             end
             
@@ -51,14 +50,14 @@ classdef rigClass < dynamicprops
             
             % Reset DAQ boards
             fStatus(1/6, 'starting up: resetting DAQ...')
-            for iDev = unique(strtok([{AIchans} AOchans], '/'))
+            for iDev = unique(strtok([{obj.AIchans} obj.AOchans], '/'))
                 DaqSystem.Local.LoadDevice(iDev{1}).Reset
             end
             
             % Setting up device objects
             fStatus(1/6, 'starting up: setting up DAQ...')
             obj.AItask = NationalInstruments.DAQmx.Task;
-            obj.AItask.AIChannels.CreateVoltageChannel(AIchans, '', AITerminalConfiguration.Differential,-10, 10, AIVoltageUnits.Volts);
+            obj.AItask.AIChannels.CreateVoltageChannel(obj.AIchans, '', AITerminalConfiguration.Differential,-10, 10, AIVoltageUnits.Volts);
             obj.AItask.Timing.ConfigureSampleClock('', obj.AIrate, SampleClockActiveEdge.Rising, SampleQuantityMode.ContinuousSamples, 100)
             obj.AItask.Triggers.StartTrigger.ConfigureDigitalEdgeTrigger('PFI0', DigitalEdgeStartTriggerEdge.Rising);
             %obj.AItask.ExportSignals.ExportHardwareSignal(ExportSignal.StartTrigger, 'PFI0');
@@ -66,7 +65,7 @@ classdef rigClass < dynamicprops
             obj.AIreader = AnalogUnscaledReader(obj.AItask.Stream);
             
             obj.AOtask{1} = NationalInstruments.DAQmx.Task;
-            obj.AOtask{1}.AOChannels.CreateVoltageChannel(AOchans{1}, '',-10, 10, AOVoltageUnits.Volts);
+            obj.AOtask{1}.AOChannels.CreateVoltageChannel(obj.AOchans{1}, '',-10, 10, AOVoltageUnits.Volts);
             obj.AOtask{1}.Stream.WriteRegenerationMode = WriteRegenerationMode.AllowRegeneration;
             obj.AOtask{1}.Timing.ConfigureSampleClock('', obj.AOrate, SampleClockActiveEdge.Rising, SampleQuantityMode.ContinuousSamples, 100)
             obj.AOtask{1}.Triggers.StartTrigger.ConfigureDigitalEdgeTrigger('PFI0', DigitalEdgeStartTriggerEdge.Rising);
@@ -75,7 +74,7 @@ classdef rigClass < dynamicprops
             obj.AOwriter{1} = AnalogMultiChannelWriter(obj.AOtask{1}.Stream);
             
             obj.AOtask{2} = NationalInstruments.DAQmx.Task;
-            obj.AOtask{2}.AOChannels.CreateVoltageChannel(AOchans{2}, '',-10, 10, AOVoltageUnits.Volts);
+            obj.AOtask{2}.AOChannels.CreateVoltageChannel(obj.AOchans{2}, '',-10, 10, AOVoltageUnits.Volts);
             obj.AOtask{2}.Stream.WriteRegenerationMode = WriteRegenerationMode.AllowRegeneration;
             obj.AOtask{2}.Timing.ConfigureSampleClock('PFI7', obj.AOrate, SampleClockActiveEdge.Rising, SampleQuantityMode.ContinuousSamples, 100)
             obj.AOtask{2}.Triggers.StartTrigger.ConfigureDigitalEdgeTrigger('PFI0', DigitalEdgeStartTriggerEdge.Rising);
@@ -83,7 +82,7 @@ classdef rigClass < dynamicprops
             obj.AOwriter{2} = AnalogMultiChannelWriter(obj.AOtask{2}.Stream);
             
             obj.ShutterTask = NationalInstruments.DAQmx.Task;
-            obj.ShutterTask.DOChannels.CreateChannel(shutterline,'',ChannelLineGrouping.OneChannelForEachLine);
+            obj.ShutterTask.DOChannels.CreateChannel(obj.shutterline,'',ChannelLineGrouping.OneChannelForEachLine);
             obj.ShutterTask.Control(TaskAction.Verify);
             obj.ShutterWriter = DigitalSingleChannelWriter(obj.ShutterTask.Stream);
             
@@ -92,7 +91,7 @@ classdef rigClass < dynamicprops
             obj.TriggerTask.Control(TaskAction.Verify);
             
             fStatus(5/6, 'starting up: adding stage...');
-            obj.stage = MP285(stageCOMPort, stage_uSteps_um);
+            obj.stage = MP285(obj.stageCOMPort, obj.stage_uSteps_um);
             
             fStatus(1); fprintf(1, '\n');
         end
