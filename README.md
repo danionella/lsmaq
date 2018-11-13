@@ -1,5 +1,5 @@
 # LSMAQ
-LSMAQ is a lightweight laser scanning microscope acquisition software written in MATLAB. It supports National Instruments hardware for galvo-based scanning.
+LSMAQ is a lightweight and flexible laser scanning microscope acquisition software written in MATLAB. It supports National Instruments hardware for galvo-based scanning.
 
 ## Should I use it?
 If you are an end user of laser scanning microscopes, you will most likely be well served by existing software packages like [ScanImage](http://scanimage.vidriotechnologies.com). LSMAQ was created by microscope developers aiming for maximum flexibility and ease of customisation. Scripting and quick code modification are facilitated by a clear separation between scanning engine and UI frontend, as well as a lightweight and minimal code base. Adding a new custom property to the UI takes a single line. 
