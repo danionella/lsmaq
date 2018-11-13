@@ -9,11 +9,11 @@ To minimize code and maximize flexibility, LSMAQ exposes all scanning parameters
 Present uses include tiled volume acquisition, arbitrary plane piezo-based scanning and phase-stepping for wavefront shaping / [deep imaging](https://doi.org/10.1038/nphoton.2016.252). LSMAQ supports galvo-based scanning but does not (yet) support resonant scanners.
 
 ## Requirements
-- MATLAB (tested with version 2018b, earlier versions since 2009a likely supported)
-- National Instruments data acquisition hardware: at least one high-speed (MHz) multifunction NI DAQ board. Tested with NI-USB-6356 (primary) and NI-USB-6343 (secondary)
+- MATLAB (tested with version 2018b, earlier versions since 2009a likely supported). The DAQ toolbox is *not* required as LSMAQ directly calls NI-DAQmx functions through MATLAB's .NET interface.
+- National Instruments data acquisition hardware: at least one high-speed (MHz) multifunction NI DAQ board. Tested with NI USB-6356 (primary) and NI USB-6343 (secondary)
 
 ## Installation
-1. Install NI-DAQmx, making sure to include .NET support (tested with version 15.5, earlier versions likely supported)
+1. Install NI-DAQmx, making sure to include .NET support (tested with version 18.5, earlier versions likely supported)
 2. Clone this repository or copy the contents of this folder to your hard drive.
 3. Open/edit rigClass.m to confirm that is reflects your DAQ hardware and wiring (see below)
 4. You are done already
@@ -21,14 +21,14 @@ Present uses include tiled volume acquisition, arbitrary plane piezo-based scann
 ## Wiring
 LSMAQ will flexibly support your custom DAQ card wiring as long as that wiring is configured in rigClass.m. To make your life easier and minimise the edits needed, we suggest using the following default hardware wiring:
 
-#### Primary DAQ card (e.g. NI-USB-6356):
+#### Primary DAQ card (e.g. NI USB-6356):
 - PMT inputs: AI ports 0 and 1 (up to 8 input channels supported)
 - Galvo outputs: AO ports 0 and 1
 - Connect PFI12 to USER1 using the screw terminals (USER1 will be the trigger output port)
 - Connect USER1 to PFI0 (trigger input)
 - Connect PFI1 to the shutter
 
-#### Optional: Secondary DAQ card for additional AO channels (e.g. NI-USB-6343):
+#### Optional: Secondary DAQ card for additional AO channels (e.g. NI USB-6343):
 - Additional outputs (e.g. to Pockels cell or piezo): AO ports 0, 1, etc
 - Connect PFI7 on the primary DAQ card to PFI7 on all other cards (AO clock sync)
 - Connect USER1 on the primary DAQ card to PFI0 on all cards (trigger signal)
