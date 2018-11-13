@@ -44,7 +44,7 @@ This file defines the startup scan and grab properties. You can modify this file
 
 | Grab properties | Description |
 | --- | --- |
-| `dirName` | Save path for data
+| `dirName` | Save path for. Image data and scan configuration are saved as .mat files in HDF5 format. Files can be opened in MATLAB and any other software that supports HDF5 (including FIJI/ImageJ with the HDF5 Plugin)
 | `fileBaseName` | Each file name will start with this string
 | `fileNumber` | The next file name will end with this number
 | `nFrames` | Grab this many frames (per slice/tile)
