@@ -19,25 +19,26 @@ LSMAQ supports galvo-based scanning but does not (yet) support resonant scanners
 ## Wiring
 LSMAQ will flexibly support your custom DAQ card wiring as long as that wiring is configured in rigClass.m. To make your life easier and minimise the edits needed, we suggest using the following default hardware wiring:
 
-###### Primary DAQ card (e.g. NI-USB-6365):
+##### Primary DAQ card (e.g. NI-USB-6365):
 - PMT inputs: AI ports 0 and 1 (up to 8 input channels supported)
 - Galvo outputs: AO ports 0 and 1
 - Connect PFI12 to USER1 using the screw terminals (USER1 will be the trigger output signal)
 - Connect USER1 to PFI0 (trigger input)
 - Connect PFI1 to the shutter
 
-###### Optional: Secondary DAQ card for additional AO channels (e.g. NI-USB-6365):
+##### Optional: Secondary DAQ card for additional AO channels (e.g. NI-USB-6365):
 - Additional outputs (e.g. to Pockels cell or piezo): AO ports 0, 1, etc
 - Connect PFI7 on the primary DAQ card to PFI7 on all other cards (AO clock sync)
 - Connect USER1 on the primary DAQ card to PFI0 on all cards (trigger signal)
 
 ## Configure / customize
-##### rigClass.m
+#### rigClass.m
 Open rigClass.m to make sure the settings reflect your hardware and wiring.
 
-##### defaultProps.m
+#### defaultProps.m
 This file defines the startup scan and grab properties. You can modify this file or start LSMAQ (section below) to adjust the properties in the UI.
 
+## Properties
 
 | Grab properties | Description |
 | --- | --- |
@@ -62,14 +63,12 @@ This file defines the startup scan and grab properties. You can modify this file
 | `scanAngle` | 3-element vector of rotation angles (in degrees) along X, Y, or Z axis. Example: for a 30 deg rotation in the XY plane, set this property to `[0 0 30]`. With the help of an objective piezo, this can be used for arbitrary plane rotation in 3D, but make sure that the hardware supports the new fast axis direction (or slow down scanning until it does. Use sparingly and keep in mind that only one mirror is designed to be the fast one. Default: `[0 0 0]`
 | `zoom` | Image zoom. Higher values result in smaller image sizes. Keep in mind that scanning speed may have to be lowered for lowest zoom levels (highest scan amplitudes). The zoom can also be set by using the scroll wheel in the UI. Example: If `scanAmp = [1 1]` and `zoom = 2`, the output voltage range to the X galvo will be -0.5V to +0.5V (the output voltage range to the Y galvo depends on the image size in pixels, as the pixel aspect ratio is kept at 1 when both scanAmp values are the same).
 
-## Test run
-Type `lsmaq` to run. This should open a window like this:
+## Quick start
+Type `lsmaq` to run. This should open a property window and one or more channel windows. To control lsmaq from teh command line, use this alternative way to start lsmaq: `[rig, prop, hIm] = lsmaq;`. This will allow you to do the following:
+- You can adjust scan and grab properties (`prop.scancfg` and `prop.grabcfg`) using your own code. For example, type `prop.scancfg.zoom = 4` in the matlab prompt. This will immediately adjust the UI. The link is bidirectional. If you change a property in the UI, it will be updated in `prop`.
+- You can start scanning using command-line. Type `data = grabStream(rig, prop, hIm);` to grab data using the properties in prop (this will display data while it is acquired. To run entirely without UI, omit the third parameter and type `data = grabStream(rig, prop);`)
 
-In parallel to using the UI, properties can be adjusted programmatically. To achieve this, use this alternative way to start lsmaq: `[rig, prop, hIm] = lsmaq;`. This will allow you to do two things:
-1. You can adjust scan and grab properties (`prop.scancfg` and `prop.grabcfg`) using your own code. For example, type `prop.scancfg.zoom = 4` in the matlab prompt. This will immediately adjust the UI. The link is bidirectional. If you change a property in the UI, it will be updated in `prop`.
-2. You can start scanning using command-line. Type `data = grabStream(rig, prop, hIm);` to grab data using the properties in prop (this will display data while it is acquired. To run entirely without UI, omit the third parameter and type `data = grabStream(rig, prop);`)
-
-Example: to acquire 10 images at zoom levels 1 to 10,
+Example: to acquire 10 images at zoom levels 1 to 10, type
 ```matlab
 props.grabcfg.nFrames = 1;
 for i = 1:10
