@@ -79,6 +79,6 @@ To control lsmaq from the command line, use this alternative way to start lsmaq:
 props.grabcfg.nFrames = 1;
 for i = 1:10
   prop.scancfg.zoom = i;
-  data = grabStream(rig, prop, hIm);
+  data(:,:,:,i) = grabStream(rig, prop, hIm); % you can make this more efficient by preallocating 'data'
 end
 ```
