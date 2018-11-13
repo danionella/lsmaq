@@ -47,13 +47,13 @@ This file defines the startup scan and grab properties. You can modify this file
 | `dirName` | Save path for data
 | `fileBaseName` | Each file name will start with this string
 | `fileNumber` | The next file name will end with this number
-| `nFrames` | Grab this many frames (in time)
-| `stackNumXyz` | When acquiring slices or tiles, acquire [x y z] slices/tiles along x, y, and z
-| `stackDeltaXyz` | Slice/tile separation along [x y z]. Example: to take a stack of 50 slices separated by 5 µm along Z, set stackNumXyz to `[1 1 50]` and stackDeltaXyz to `[0 0 50]`. To acquire a tiled volume of two tiles along X, 3 along Y and 50 slices along Z, with an X/Y tile separation of 200 µm, set stackNumXyz to `[2 3 50]` and stackDeltaXyz to `[200 200 5]`.
-| `stackOrderXyz` | Aquire slices and tiles in this order. Example: to first move along Z, then X then Y, set this to [3 1 2]. To first move along X and Y, then Z, set this to [1 2 3].
+| `nFrames` | Grab this many frames (per slice/tile)
+| `stackNumXyz` | 3-element vector. When acquiring slices or tiles, acquire [x y z] slices/tiles along x, y, and z
+| `stackDeltaXyz` | 3-element vector. Slice/tile separation along [x y z]. Example: to take a stack of 50 slices separated by 5 µm along Z, set stackNumXyz to `[1 1 50]` and stackDeltaXyz to `[0 0 50]`. To acquire a tiled volume of two tiles along X, 3 along Y and 50 slices along Z, with an X/Y tile separation of 200 µm, set stackNumXyz to `[2 3 50]` and stackDeltaXyz to `[200 200 5]`.
+| `stackOrderXyz` | 3-element vector. Aquire slices and tiles in this order. Example: to first move along Z, then X then Y, set this to [3 1 2]. To first move along X and Y, then Z, set this to [1 2 3].
 | **Scan properties** | **Description** |
 | `bidirectional` | Toggle bi-directional scanning. `true` or `false`
-| `fillFraction` | Fraction of the line not used for flyback. Recommendation for a 1.25 MHz AI rate: 1024/1250 = 0.8192 (having 1024 samples per 1 ms line makes binning very convenient)
+| `fillFraction` | Fraction of the line not used for flyback. Recommendation for a standard 1.25 MHz analog input rate: 0.8192 (this is 1024/1250; having 1024 fill samples per 1 ms line makes binning by orders of 2 convenient)
 | `fillLag` | Lag of the true position versus command position (dimensionless fraction of the line). Typical value: 0.1
 | `nInSamplesPerLine` | Number of sample per line (including flyback). This setting sets the line rate. At 1.25 MHz, 1250 samples per line would result in a line rate of 1 kHz and 2500 samples in 0.5 kHz.
 | `nLinesPerFrame` | Number of horizontal lines (vertical image size in pixels)
