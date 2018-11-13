@@ -24,7 +24,7 @@ LSMAQ will flexibly support your custom DAQ card wiring as long as that wiring i
 #### Primary DAQ card (e.g. NI-USB-6356):
 - PMT inputs: AI ports 0 and 1 (up to 8 input channels supported)
 - Galvo outputs: AO ports 0 and 1
-- Connect PFI12 to USER1 using the screw terminals (USER1 will be the trigger output signal)
+- Connect PFI12 to USER1 using the screw terminals (USER1 will be the trigger output port)
 - Connect USER1 to PFI0 (trigger input)
 - Connect PFI1 to the shutter
 
