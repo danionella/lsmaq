@@ -70,7 +70,7 @@ Type `lsmaq` to run. This should open a property window and one or more channel 
 
 ![gui screenshot](gui.png)
 
-Close the property window (pres 'X') to close the lsmaq UI.
+Close the property window (press 'X') to close the lsmaq UI.
 
 To control lsmaq from the command line, use this alternative way to start lsmaq: `[rig, prop, hIm] = lsmaq;`. This will still open a UI as above, but it will also allow you to do the following:
 - You can adjust scan and grab properties (`prop.scancfg` and `prop.grabcfg`) using your own code. For example, type `prop.scancfg.zoom = 4` in the matlab prompt. This will immediately adjust the UI. The link is bidirectional. If you change a property in the UI, it will be updated in `prop`.
