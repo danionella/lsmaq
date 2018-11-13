@@ -76,10 +76,10 @@ To control lsmaq from the command line, use this alternative way to start lsmaq:
 - You can adjust scan and grab properties (`prop.scancfg` and `prop.grabcfg`) using your own code. For example, type `prop.scancfg.zoom = 4` in the matlab prompt. This will immediately adjust the UI. The link is bidirectional. If you change a property in the UI, it will be updated in `prop`.
 - You can start scanning using command-line. Type `data = grabStream(rig, prop, hIm);` to grab data using the configuration in `prop` (this will display data while it is acquired. To run entirely without display, omit the third parameter and type `data = grabStream(rig, prop);`)
 
-#### Example 1: acquire 10 images at zoom levels 1 to 10
+#### Example 1: acquire 5 images at zoom levels 1 to 5
 ```matlab
 props.grabcfg.nFrames = 1;
-for i = 1:10
+for i = 1:5
   prop.scancfg.zoom = i;
   data(:,:,:,i) = grabStream(rig, prop, hIm); % you can make this more efficient by preallocating 'data'
 end
