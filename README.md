@@ -6,7 +6,7 @@ If you are an end user of laser scanning microscopes, you will most likely be we
 
 To minimize code and maximize flexibility, LSMAQ exposes all scanning parameters, performs very few checks on user input and generally assumes that the user knows the hardware limitations of their setup.
 
-Present uses include tiled volume acquisition, arbitrary plane piezo-based scanning and phase-stepping for wavefront shaping / [deep imaging](https://doi.org/10.1038/nphoton.2016.252). LSMAQ supports galvo-based scanning but does not (yet) support resonant scanners.
+Present uses include tiled volume acquisition, arbitrary plane piezo-based scanning and phase-stepping for wavefront shaping / [deep imaging](https://doi.org/10.1038/nphoton.2016.252). LSMAQ supports galvo-based scanning but does not support resonant scanners.
 
 ## Requirements
 - MATLAB (tested with version 2018b, earlier versions since 2009a likely supported). The DAQ toolbox is *not* required as LSMAQ directly calls NI-DAQmx functions through MATLAB's .NET interface.
