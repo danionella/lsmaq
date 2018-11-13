@@ -4,7 +4,7 @@ LSMAQ is a lightweight laser scanning microscope acquisition software package wr
 ## Should I use it?
 If you are an end user of laser scanning microscopes, you will most likely be well served by existing software packages like [ScanImage](http://scanimage.vidriotechnologies.com). LSMAQ was developed by microscope developers aiming for maximum flexibility and ease of customisation. Scripting and quick code modification are facilitated by a clear separation between scanning engine and UI frontend, as well as a lightweight and minimal code base. Adding a new custom property to the UI takes a single line.
 
-Present uses include tiled volume acquisition, flexible piezo-based scanning and phase-stepping for wavefront shaping / [deep imaging](https://doi.org/10.1038/nphoton.2016.252). LSMAQ supports galvo-based scanning but does not (yet) support resonant scanners.
+Present uses include tiled volume acquisition, arbitrary plane piezo-based scanning and phase-stepping for wavefront shaping / [deep imaging](https://doi.org/10.1038/nphoton.2016.252). LSMAQ supports galvo-based scanning but does not (yet) support resonant scanners.
 
 ## Requirements
 - MATLAB (tested with version 2018b, earlier versions since 2009a likely supported)
