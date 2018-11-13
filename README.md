@@ -2,30 +2,31 @@
 LSMAQ is a lightweight laser scanning microscope acquisition software package written in MATLAB. It supports National Instruments hardware for galvo-based scanning.
 
 ## Should I use it?
-If you are an end user of laser scanning microscopes, you will most likely be well served by existing software packages like [ScanImage](http://scanimage.vidriotechnologies.com). LSMAQ was developed by microscope developers aiming for maximum flexibility and ease of customisation. Scripting and quick code modification are facilitated by a clear separation between scanning engine and UI frontend, as well as a lightweight and minimal code base. Adding a new custom property to the UI takes a single line.
+If you are an end user of laser scanning microscopes, you will most likely be well served by existing software packages like [ScanImage](http://scanimage.vidriotechnologies.com). LSMAQ was developed by microscope developers aiming for maximum flexibility and ease of customisation. Scripting and quick code modification are facilitated by a clear separation between scanning engine and UI frontend, as well as a lightweight and minimal code base. Adding a new custom property to the UI takes a single line. 
 
 Present uses include tiled volume acquisition, arbitrary plane piezo-based scanning and phase-stepping for wavefront shaping / [deep imaging](https://doi.org/10.1038/nphoton.2016.252). LSMAQ supports galvo-based scanning but does not (yet) support resonant scanners.
 
 ## Requirements
 - MATLAB (tested with version 2018b, earlier versions since 2009a likely supported)
-- National Instruments data acquisition hardware: at least one high-speed (MHz)  multifunction NI DAQ board. Tested with NI-USB-6365 (primary) and NI-USB-6345 (secondary)
+- National Instruments data acquisition hardware: at least one high-speed (MHz)  multifunction NI DAQ board. Tested with NI-USB-6356 (primary) and NI-USB-6343 (secondary)
 
 ## Installation
 1. Install NI-DAQmx, making sure to include .NET support (tested with version 15.5, earlier versions likely supported)
-2. Open/edit rigClass.m to confirm that is reflects your DAQ hardware and wiring (see below)
-3. You are done already
+2. Clone this repository or copy the contents of this folder to your hard drive.
+3. Open/edit rigClass.m to confirm that is reflects your DAQ hardware and wiring (see below)
+4. You are done already
 
 ## Wiring
 LSMAQ will flexibly support your custom DAQ card wiring as long as that wiring is configured in rigClass.m. To make your life easier and minimise the edits needed, we suggest using the following default hardware wiring:
 
-##### Primary DAQ card (e.g. NI-USB-6365):
+#### Primary DAQ card (e.g. NI-USB-6356):
 - PMT inputs: AI ports 0 and 1 (up to 8 input channels supported)
 - Galvo outputs: AO ports 0 and 1
 - Connect PFI12 to USER1 using the screw terminals (USER1 will be the trigger output signal)
 - Connect USER1 to PFI0 (trigger input)
 - Connect PFI1 to the shutter
 
-##### Optional: Secondary DAQ card for additional AO channels (e.g. NI-USB-6365):
+#### Optional: Secondary DAQ card for additional AO channels (e.g. NI-USB-6343):
 - Additional outputs (e.g. to Pockels cell or piezo): AO ports 0, 1, etc
 - Connect PFI7 on the primary DAQ card to PFI7 on all other cards (AO clock sync)
 - Connect USER1 on the primary DAQ card to PFI0 on all cards (trigger signal)
@@ -65,13 +66,13 @@ This file defines the startup scan and grab properties. You can modify this file
 ## Quick start
 Type `lsmaq` to run. This should open a property window and one or more channel windows. Start scanning by pressing the play button. Grab with the record button. 
 
-![alt text](gui.png)
+![gui screenshot](gui.png)
 
-To control lsmaq from the command line, use this alternative way to start lsmaq: `[rig, prop, hIm] = lsmaq;`. This will still open an UI as above, but it will also allow you to do the following:
+To control lsmaq from the command line, use this alternative way to start lsmaq: `[rig, prop, hIm] = lsmaq;`. This will still open a UI as above, but it will also allow you to do the following:
 - You can adjust scan and grab properties (`prop.scancfg` and `prop.grabcfg`) using your own code. For example, type `prop.scancfg.zoom = 4` in the matlab prompt. This will immediately adjust the UI. The link is bidirectional. If you change a property in the UI, it will be updated in `prop`.
 - You can start scanning using command-line. Type `data = grabStream(rig, prop, hIm);` to grab data using the properties in prop (this will display data while it is acquired. To run entirely without UI, omit the third parameter and type `data = grabStream(rig, prop);`)
 
-Example: to acquire 10 images at zoom levels 1 to 10, type
+#### Example 1: acquire 10 images at zoom levels 1 to 10
 ```matlab
 props.grabcfg.nFrames = 1;
 for i = 1:10
