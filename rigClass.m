@@ -4,7 +4,7 @@ classdef rigClass < dynamicprops
     %
 
 
-    properties (Constant) %adjust these
+    properties (Constant) %check these settings. If you are not sure about your device number, check NI MAX Automation explorer
         AIrate = 1250000;                         % analog input sample rate in Hz
         AOrate = 250000;                          % analog output sample rate in Hz
         AIchans = 'Dev5/ai0:1';                   % path to AI channels (primary DAQ card)
