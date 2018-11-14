@@ -4,13 +4,13 @@ classdef rigClass < dynamicprops
     %
 
 
-    properties (Constant) %check these settings. If you are not sure about your device number, check NI MAX Automation explorer
+    properties (Constant) %check these settings. If you are not sure about your device names, check NI MAX Automation explorer
         AIrate = 1250000;                         % analog input sample rate in Hz
         AOrate = 250000;                          % analog output sample rate in Hz
-        AIchans = 'Dev5/ai0:1';                   % path to AI channels (primary DAQ card)
-        shutterline = '/Dev5/PFI1';               % path to shutter output line (primary DAQ card)
-        AOchans = {'Dev5/ao0:1', 'Dev4/ao0:2'};   % cell array of AO channel paths. For a single AO card, this would be a 1-element cell
-        channelOrder = {[1 2], [3 4 5]};          % cell array of signal to channel assignments. Assign [X,Y,Z,Blank,Phase] signals (in that order, 1-based indexing) to output channels. To assign X to the first output channel, Y to the second and blank to the third, use [1 2 4]
+        AIchans = 'Dev1/ai0:1';                   % path to AI channels (primary DAQ card)
+        shutterline = '/Dev1/PFI1';               % path to shutter output line (primary DAQ card)
+        AOchans = {'Dev1/ao0:1', 'Dev2/ao0:2'};   % cell array of AO channel paths. For a single AO card, this would be a 1-element cell
+        channelOrder = {[1 2], [3 4 5]};          % cell array of signal to channel assignments. Assign [X,Y,Z,Blank,Phase] signals (in that order, 1-based indexing) to output channels. To assign X to the first output channel, Y to the second, blank to the first of the second card and Z to the second of the second card, use {[1 2], [4 3]}
         stageCOMPort = 'COM10';                   % COM port for Sutter MP285 stage
         stage_uSteps_um = [10 10 25];             % Microsteps per µm. Default: [25 25 25]
     end
@@ -91,7 +91,7 @@ classdef rigClass < dynamicprops
             obj.TriggerTask.COChannels.CreatePulseChannelTime(['/' primaryDev '/Ctr0'], '', COPulseTimeUnits.Seconds, COPulseIdleState.Low, 0, 0.1, 0.1);
             obj.TriggerTask.Control(TaskAction.Verify);
 
-            fStatus(5/6, 'starting up: adding stage...');
+            fStatus(4/6, 'starting up: adding stage...');
             obj.stage = MP285(obj.stageCOMPort, obj.stage_uSteps_um);
 
             fStatus(1); fprintf(1, '\n');
