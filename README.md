@@ -2,7 +2,9 @@
 LSMAQ is a lightweight and flexible laser scanning microscope acquisition software written in MATLAB. It supports National Instruments hardware for galvo-based scanning.
 
 ## Should I use it?
-If you are an end user of laser scanning microscopes, you will most likely be well served by existing software packages like [ScanImage](http://scanimage.vidriotechnologies.com). LSMAQ was created by microscope developers aiming for increased flexibility and ease of customisation. Scripting and quick code modification are facilitated by a clear separation between scanning engine and UI frontend, as well as a lightweight and minimal code base. Adding a new custom property to the UI takes a single line. 
+If you are an end user of laser scanning microscopes, you will most likely be well served by existing software packages like [ScanImage](http://scanimage.vidriotechnologies.com). The ScanImage team does a very good job at keeping their software up to date with new developments that most end users are interested in.
+
+LSMAQ was created by microscope developers aiming for increased flexibility and ease of customisation. Scripting and quick code modification are facilitated by a clear separation between scanning engine and UI frontend, as well as a lightweight and minimal code base. Adding a new custom property to the UI takes a single line.
 
 To minimize code and maximize flexibility, LSMAQ exposes all scanning parameters, performs very few checks on user input and generally assumes that the user knows the hardware limitations of their setup.
 
@@ -65,7 +67,7 @@ This file defines the startup scan and grab properties. You can modify this file
 | `zoom` | Image zoom. Higher values result in smaller image sizes. Keep in mind that scanning speed may have to be lowered for lowest zoom levels (highest scan amplitudes). The zoom can also be set by using the mouse scroll wheel in the UI. Example: If `scanAmp = [1 1]` and `zoom = 2`, the output voltage range to the X galvo will be -0.5V to +0.5V (the output voltage range to the Y galvo depends on the image size in pixels, as the pixel aspect ratio is kept at 1 when both scanAmp values are the same).
 
 ## Quick start
-Type `lsmaq` to run. This should open a property window and one or more channel windows. 
+Type `lsmaq` to run. This should open a property window and one or more channel windows.
 
 ![gui screenshot](gui.png)
 
@@ -76,10 +78,58 @@ To control lsmaq from the command line, use this alternative way to start lsmaq:
 - You can start scanning using command-line. Type `data = grabStream(rig, prop, hIm);` to grab data using the configuration in `prop` (this will display data while it is acquired. To run entirely without display, omit the third parameter and type `data = grabStream(rig, prop);`)
 
 #### Example 1: acquire 5 images at zoom levels 1 to 5
+Start lsmaq with `[rig, prop, hIm] = lsmaq;`. You can use the UI to find a sample area of interest. Stop scanning, then execute this code to loop through zoom levels.
+
 ```matlab
-props.grabcfg.nFrames = 1;
+prop.grabcfg.nFrames = 1;
 for i = 1:5
   prop.scancfg.zoom = i;
-  data(:,:,:,i) = grabStream(rig, prop, hIm); % you can make this more efficient by preallocating 'data'
+  data(:,:,:,:,i) = grabStream(rig, prop, hIm);
 end
 ```
+
+## Under the hood
+
+LSMAQ consists of a command-line scan engine with a UI on top.
+- Scan engine
+  - `grabStream` is the main scan function. Its takes hardware information (initialized by `rigClass`) plus scan/grab configuration (e.g. from `defaultProps`) and outputs image data. It talks to `makeScanPattern` to create analog output signals and `raw2pixeldata` to process raw analog input into image frames.
+- UI
+  - `lsmaq` starts the UI, consisting of channel figures created by `chanfig` and a property table of a `dynamicshell` object. Stacks and tiled volumes are saved with the help of `matmap`, a convenient way to preallocate large data sets on the disk and save them in compressed HDF5 format.
+  - `dynamicshell` is a class to turn a MATLAB structure into an object that can be passed by reference. Its members can be previewed in a simple property table, forming the main part of the LSMAQ property window.
+
+The following examples will illustrate the purpose of these functions, and how the UI sits on top of the command-line code.
+
+#### Example 2: command-line acquisition without any graphics
+```matlab
+%initialize your hardware
+rig = rigClass;
+%load default scan and grab configuration as a structure
+prop = defaultProps;
+%change configuration as needed, for example:
+prop.grabcfg.nFrames = 10;
+prop.scancfg.nLinesPerFrame = 512;
+prop.scancfg.nPixelsPerLine = 512;
+%acquire:
+data = grabStream(rig, prop);
+```
+
+#### Example 3: same as above, but with a simple UI for changing properties
+Here we will turn the `prop` structure into a `dynamicshell` object. This object will still look and feel a lot like a MATLAB structure (you can read and write its fields in the usual way), with two important differences: First, you can pass the data by reference. Second, there is a simple UI to inspect its fields graphically.
+
+```matlab
+%initialize your hardware
+rig = rigClass;
+%load default scan and grab configuration
+prop = defaultProps;
+%convert the structure into a `dynamicshell` object.
+prop = dynamicshell(prop)
+%inspect the object in a property table
+prop.inspect
+%add two channel figures
+hIm(1) = chanfig(1)
+hIm(2) = chanfig(2)
+%when done, acquire:
+data = grabStream(rig, prop, hIm);
+```
+
+This is, more or less, what `lsmaq` does – plus colored buttons.
