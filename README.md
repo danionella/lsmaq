@@ -71,9 +71,9 @@ Type `lsmaq` to run. This should open a property window and one or more channel 
 
 ![gui screenshot](gui.png)
 
-Use the property window to edit the configuration. Press enter when done editing or click outside the text field. Start scanning by pressing the play button. Adjust the zoom with the mouse scroll wheel. Stop by pressing play again or by pressing the stop button. Grab with the record button. Close the lsmaq UI by closing the property window (press 'X').
+Use the property window to edit the configuration. Press enter when done editing or click outside the text field. Start scanning by pressing the play button. Adjust the zoom with the mouse scroll wheel. Stop by pressing play again or by pressing the stop button. Grab with the record button. Record  stacks or tield volumes with the blue button. Close the LSMAQ UI by closing the property window (press 'X').
 
-To control lsmaq from the command line, use this alternative way to start lsmaq: `[rig, prop, hIm] = lsmaq;`. This will still open a UI as above, but it will also allow you to do the following:
+To control LSMAQ from the command line, use this alternative way to start lsmaq: `[rig, prop, hIm] = lsmaq;`. This will still open a UI as above, but it will also allow you to do the following:
 - You can adjust scan and grab properties (`prop.scancfg` and `prop.grabcfg`) using your own code. For example, type `prop.scancfg.zoom = 4` in the matlab prompt. This will immediately adjust the UI. The link is bidirectional. If you change a property in the UI, it will be updated in `prop`.
 - You can start scanning using command-line. Type `data = grabStream(rig, prop, hIm);` to grab data using the configuration in `prop` (this will display data while it is acquired. To run entirely without display, omit the third parameter and type `data = grabStream(rig, prop);`)
 
