@@ -31,8 +31,6 @@ classdef rigClass < dynamicprops
     methods
 
         %rigClass is a function that generates an object "obj" that defines extra dynamic properties
-        % where is fStatus?
-
         function obj = rigClass(fStatus)
             if nargin < 1
                 fprintf(1, 'Starting up rig:    ');
@@ -55,7 +53,7 @@ classdef rigClass < dynamicprops
             end
 
             % Setting up device objects
-            fStatus(1/6, 'starting up: setting up DAQ...')
+            fStatus(2/6, 'starting up: setting up DAQ...')
             obj.AItask = NationalInstruments.DAQmx.Task;
             obj.AItask.AIChannels.CreateVoltageChannel(obj.AIchans, '', AITerminalConfiguration.Differential,-10, 10, AIVoltageUnits.Volts);
             obj.AItask.Timing.ConfigureSampleClock('', obj.AIrate, SampleClockActiveEdge.Rising, SampleQuantityMode.ContinuousSamples, 100)
