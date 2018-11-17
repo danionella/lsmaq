@@ -8,7 +8,7 @@ prop.grabcfg.fileNumber = 1;                %current file number (will be append
 prop.grabcfg.nFrames = 20;                  %number of frames to grab
 prop.grabcfg.stackNumXyz = [1 1 50];        %number of stacks/tiles in X/Y/Z
 prop.grabcfg.stackDeltaXyz = [0 0 5];       %stack and tile separation along X/Y/Z
-prop.grabcfg.stackOrderXyz = [3 1 2];       %stack scan order e.g. [3 1 2] to scan first along Z, then X, then Y
+prop.grabcfg.stackSequence = 'ZXY';         %stack scan sequence e.g. 'ZXY' to scan first along Z, then X, then Y
 
 prop.scancfg.bidirectional = false;         %toggle bidirectional scaning
 prop.scancfg.fillFraction = 1024/1250;      %fraction of line not used for flyback

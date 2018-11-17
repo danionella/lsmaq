@@ -63,7 +63,7 @@ updateStatus(0, 'ready to go!')
     function startFocus(hObj, ignore)
         warning('off', 'daq:Session:tooFrequent')
         stopEditing
-        updateStatus(NaN, 'focussing...')
+        updateStatus(NaN, 'focussing...');
         set([hTb.Grab hTb.Zstack], 'enable', 'off')
         channelAspRatio(hIm, rig, prop)
         try
@@ -74,7 +74,7 @@ updateStatus(0, 'ready to go!')
         set([hTb.Grab hTb.Focus], 'enable', 'on', 'state', 'off');
         if ~isempty(rig.stage.hPort) set(hTb.Zstack, 'enable', 'on', 'state', 'off'); end
         if restartFocus, restartFocus = false; pause(0.1), set(hTb.Focus, 'state', 'on'); end
-        updateStatus(0, 'ready to go!')
+        updateStatus(0, 'ready to go!');
         pth.Enabled = true;
     end
 
@@ -100,7 +100,7 @@ updateStatus(0, 'ready to go!')
         stopEditing
         set(hTb.Focus, 'enable', 'off')
         updateStatus(NaN, 'Acquiring z-stack...')
-        coords = getCoords(prop.grabcfg.stackNumXyz, prop.grabcfg.stackDeltaXyz, prop.grabcfg.stackOrderXyz);
+        coords = getCoords(prop.grabcfg.stackNumXyz, prop.grabcfg.stackDeltaXyz, prop.grabcfg.stackSequence);
         nSlices = prod(prop.grabcfg.stackNumXyz);
         startPos = rig.stage.getPos;
         filename = [prop.grabcfg.dirName filesep prop.grabcfg.fileBaseName num2str(prop.grabcfg.fileNumber) '.mat'];
@@ -123,9 +123,10 @@ updateStatus(0, 'ready to go!')
         updateStatus(0, 'ready to go!')
         pth.Enabled = true;
 
-        function coords = getCoords(nXYZ, dXYZ, orderXYZ)
+        function coords = getCoords(nXYZ, dXYZ, stackSequence)
+            order = (stackSequence=='X') +  2*(stackSequence=='Y') + 3*(stackSequence=='Z'); %turn sttring into numeric stack order
             [nd(:,:,:,1), nd(:,:,:,2), nd(:,:,:,3)] = ndgrid((0:nXYZ(1)-1)*dXYZ(1), (0:nXYZ(2)-1)*dXYZ(2), (0:nXYZ(3)-1)*dXYZ(3));
-            nd = permute(nd, [orderXYZ 4]);
+            nd = permute(nd, [order 4]);
             coords = reshape(nd, [], 3);
         end
     end
