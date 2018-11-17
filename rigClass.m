@@ -125,7 +125,9 @@ classdef rigClass < dynamicprops
 
         function setupAIlistener(obj, fun, nsamples)
             import NationalInstruments.DAQmx.*
-            obj.AItask.Timing.ConfigureSampleClock('',obj.AIrate,SampleClockActiveEdge.Rising,SampleQuantityMode.ContinuousSamples,nsamples*10);
+            buffersize = max([nsamples*2 1000000]);
+            buffersize = ceil(buffersize/nsamples)*nsamples; %to make sure buffer size is an integer multiple of nsamples 
+            obj.AItask.Timing.ConfigureSampleClock('',obj.AIrate,SampleClockActiveEdge.Rising,SampleQuantityMode.ContinuousSamples,buffersize);
             obj.AItask.EveryNSamplesReadEventInterval = nsamples;
             obj.AIlistener = addlistener(obj.AItask, 'EveryNSamplesRead', @(~, ev) fun(obj.AIreader.ReadInt16(nsamples).int16));
         end
