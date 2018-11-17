@@ -44,8 +44,8 @@ nLinesPerStripe=find((rem(scancfg.nLinesPerFrame, 1:scancfg.nLinesPerFrame) == 0
 
 % initialize
 iAcquiredLines = 0;
-outdata = zeros(scancfg.nPixelsPerLine, scancfg.nLinesPerFrame, rig.AItask.AIChannels.Count, 'double');
-data = zeros([scancfg.nPixelsPerLine scancfg.nLinesPerFrame rig.AItask.AIChannels.Count grabcfg.nFrames*scancfg.piezoStepsN], 'double');
+outdata = zeros(scancfg.nPixelsPerLine, scancfg.nLinesPerFrame, rig.AItask.AIChannels.Count, 'int16');
+data = zeros([scancfg.nPixelsPerLine scancfg.nLinesPerFrame rig.AItask.AIChannels.Count grabcfg.nFrames*scancfg.piezoStepsN], 'int16');
 
 % AI acquisition is continuous and will be stopped after all the expected data are collected
 rig.setupAIlistener(@samplesAcquiredFun, nLinesPerStripe * scancfg.nInSamplesPerLine)
