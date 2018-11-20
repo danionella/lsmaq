@@ -6,11 +6,11 @@ classdef rigClass < dynamicprops
 
     properties (Constant) %check these settings. If you are not sure about your device names, check NI MAX Automation explorer
         AIrate = 1250000;                         % analog input sample rate in Hz
-        AOrate = 250000;                          % analog output sample rate in Hz
+        AOrate = 250000;                          % analog output sample rate in Hz (should be divisor of AIRate)
         AIchans = 'Dev1/ai0:1';                   % path to AI channels (primary DAQ card)
         shutterline = '/Dev1/PFI1';               % path to shutter output line (primary DAQ card)
-        AOchans = {'Dev1/ao0:1', 'Dev2/ao0:2'};   % cell array of AO channel paths. For a single AO card, this would be a 1-element cell
-        channelOrder = {[1 2], [3 4 5]};          % cell array of signal to channel assignments. Assign [X,Y,Z,Blank,Phase] signals (in that order, 1-based indexing) to output channels. To assign X to the first output channel, Y to the second, blank to the first of the second card and Z to the second of the second card, use {[1 2], [4 3]}
+        AOchans = {'Dev1/ao0:1', 'Dev2/ao0:2'};   % cell array of AO channel paths. For a single AO card, this would be a 1-element cell, e.g. {'Dev1/ao0:1'}
+        channelOrder = {[1 2], [3 4 5]};          % cell array of signal to channel assignments. Assign [X,Y,Z,Blank,Phase] signals (in that order, 1-based indexing) to output channels. To assign X to the first output channel, Y to the second, blank to the first of the second card and Z to the second of the second card, use {[1 2], [4 3]}. For a single output card, this could be e.g. {[1 2]}
         stageCOMPort = 'COM10';                   % COM port for Sutter MP285 stage
         stage_uSteps_um = [10 10 25];             % Microsteps per µm. Default: [25 25 25]
     end
@@ -126,7 +126,7 @@ classdef rigClass < dynamicprops
         function setupAIlistener(obj, fun, nsamples)
             import NationalInstruments.DAQmx.*
             buffersize = max([nsamples*2 1000000]);
-            buffersize = ceil(buffersize/nsamples)*nsamples; %to make sure buffer size is an integer multiple of nsamples 
+            buffersize = ceil(buffersize/nsamples)*nsamples; %to make sure buffer size is an integer multiple of nsamples
             obj.AItask.Timing.ConfigureSampleClock('',obj.AIrate,SampleClockActiveEdge.Rising,SampleQuantityMode.ContinuousSamples,buffersize);
             obj.AItask.EveryNSamplesReadEventInterval = nsamples;
             obj.AIlistener = addlistener(obj.AItask, 'EveryNSamplesRead', @(~, ev) fun(obj.AIreader.ReadInt16(nsamples).int16));
