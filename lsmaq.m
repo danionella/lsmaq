@@ -119,7 +119,7 @@ updateStatus(0, 'ready to go!')
         rig.stage.moveAbs(startPos)
         config = prop.tostruct;
         save(filename, 'config', '-append')
-        fprintf('Saved to file %s \n', fn);
+        fprintf('Saved to file %s \n', filename);
         set([hTb.Grab hTb.Focus hTb.Zstack], 'enable', 'on', 'state', 'off');
         prop.grabcfg.fileNumber = prop.grabcfg.fileNumber + 1;
         updateStatus(0, 'ready to go!')
