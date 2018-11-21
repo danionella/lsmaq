@@ -137,12 +137,8 @@ updateStatus(0, 'ready to go!')
 
     function stopScanning(hObj, ~)
         rig.shutterClose();
-        uiresume(hChanF(1))
-        %rig.stopAndCleanup(1);
-%         updateStatus(0, 'ready to go!')
-%         isAcquiring = false;
-%         set([hTb.Grab hTb.Focus], 'enable', 'on', 'state', 'off'); pth.Enabled = true;
-%         if ~isempty(rig.stage.hPort) set(hTb.Zstack, 'enable', 'on', 'state', 'off'); end
+        rig.isScanning = false;
+        %uiresume(hChanF(1))
     end
 
     function CloseRequestFcn(hF, ~)

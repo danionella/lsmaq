@@ -79,17 +79,17 @@ cleanupObj = onCleanup(@(varargin) rig.stopAndCleanup);
 try
     %WAIT until done
     if isGrabbing
-        uiwait(ancestor(hIm(1), 'figure')) %WAITING HERE UNTIL DONE
-        %waitfor(rig, 'isScanning')
-        %rig.aoSession.wait
+        %uiwait(ancestor(hIm(1), 'figure')) %WAITING HERE UNTIL DONE
+        waitfor(rig, 'isScanning', false)
     else
         fStatus(NaN, ['live view...']);
-        uiwait(ancestor(hIm(1), 'figure'))
-        %rig.aoSession.wait(grabcfg.Timeout);
+        %uiwait(ancestor(hIm(1), 'figure'))
+        waitfor(rig, 'isScanning', false)
     end
 catch
     warning(lasterr)
 end
+
 rig.stopAndCleanup
 rig.isScanning = false;
 % delete(rig.ailh);
@@ -98,7 +98,7 @@ rig.isScanning = false;
     % NESTED FUNCTIONS
     function samplesAcquiredFun(raw)
         nCurrentFrame = floor(iAcquiredLines / scancfg.nLinesPerFrame) + 1;
-        if ~rig.isScanning || (isGrabbing && (nCurrentFrame > grabcfg.nFrames)) , uiresume(ancestor(hIm(1), 'figure')), return, end
+        if ~rig.isScanning || (isGrabbing && (nCurrentFrame > grabcfg.nFrames)) , rig.isScanning = false; pause(0), return, end
         
         %%GET RAW DATA , SHAPE INTO IMAGE
         %raw = event.Data;
