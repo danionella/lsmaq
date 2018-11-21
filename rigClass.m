@@ -9,8 +9,8 @@ classdef rigClass < dynamicprops
         AOrate = 250000;                          % analog output sample rate in Hz (should be divisor of AIRate)
         AIchans = 'Dev1/ai0:1';                   % path to AI channels (primary DAQ card)
         shutterline = '/Dev1/PFI1';               % path to shutter output line (primary DAQ card)
-        AOchans = {'Dev1/ao0:1', 'Dev2/ao0:2'};   % cell array of AO channel paths. For a single AO card, this would be a 1-element cell, e.g. {'Dev1/ao0:1'}
-        channelOrder = {[1 2], [3 4 5]};          % cell array of signal to channel assignments. Assign [X,Y,Z,Blank,Phase] signals (in that order, 1-based indexing) to output channels. To assign X to the first output channel, Y to the second, blank to the first of the second card and Z to the second of the second card, use {[1 2], [4 3]}. For a single output card, this could be e.g. {[1 2]}
+        AOchans = {'Dev1/ao0:1'};                 % cell array of AO channel paths. For a single AO card, this would be a 1-element cell, e.g. {'Dev1/ao0:1'}, for two cards, this could be {'Dev1/ao0:1', 'Dev2/ao0:2'}
+        channelOrder = {[1 2]};                   % cell array of signal to channel assignments. Assign [X,Y,Z,Blank,Phase] signals (in that order, 1-based indexing) to output channels. To assign X to the first output channel, Y to the second, blank to the first of the second card and Z to the second of the second card, use {[1 2], [4 3]}. For a single output card, this could be e.g. {[1 2]}
         stageCOMPort = 'COM10';                   % COM port for Sutter MP285 stage
         stage_uSteps_um = [10 10 25];             % Microsteps per µm. Default: [25 25 25]
     end
@@ -70,14 +70,16 @@ classdef rigClass < dynamicprops
             obj.AOtask{1}.ExportSignals.ExportHardwareSignal(ExportSignal.SampleClock, 'PFI7');
             obj.AOtask{1}.Control(TaskAction.Verify);
             obj.AOwriter{1} = AnalogMultiChannelWriter(obj.AOtask{1}.Stream);
-
-            obj.AOtask{2} = NationalInstruments.DAQmx.Task;
-            obj.AOtask{2}.AOChannels.CreateVoltageChannel(obj.AOchans{2}, '',-10, 10, AOVoltageUnits.Volts);
-            obj.AOtask{2}.Stream.WriteRegenerationMode = WriteRegenerationMode.AllowRegeneration;
-            obj.AOtask{2}.Timing.ConfigureSampleClock('PFI7', obj.AOrate, SampleClockActiveEdge.Rising, SampleQuantityMode.ContinuousSamples, 100)
-            obj.AOtask{2}.Triggers.StartTrigger.ConfigureDigitalEdgeTrigger('PFI0', DigitalEdgeStartTriggerEdge.Rising);
-            obj.AOtask{2}.Control(TaskAction.Verify);
-            obj.AOwriter{2} = AnalogMultiChannelWriter(obj.AOtask{2}.Stream);
+               
+            for i = 2:numel(obj.AOchans)
+                obj.AOtask{i} = NationalInstruments.DAQmx.Task;
+                obj.AOtask{i}.AOChannels.CreateVoltageChannel(obj.AOchans{2}, '',-10, 10, AOVoltageUnits.Volts);
+                obj.AOtask{i}.Stream.WriteRegenerationMode = WriteRegenerationMode.AllowRegeneration;
+                obj.AOtask{i}.Timing.ConfigureSampleClock('PFI7', obj.AOrate, SampleClockActiveEdge.Rising, SampleQuantityMode.ContinuousSamples, 100)
+                obj.AOtask{i}.Triggers.StartTrigger.ConfigureDigitalEdgeTrigger('PFI0', DigitalEdgeStartTriggerEdge.Rising);
+                obj.AOtask{i}.Control(TaskAction.Verify);
+                obj.AOwriter{i} = AnalogMultiChannelWriter(obj.AOtask{i}.Stream);
+            end
 
             obj.ShutterTask = NationalInstruments.DAQmx.Task;
             obj.ShutterTask.DOChannels.CreateChannel(obj.shutterline,'',ChannelLineGrouping.OneChannelForEachLine);
