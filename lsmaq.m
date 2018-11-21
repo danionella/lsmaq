@@ -80,12 +80,13 @@ updateStatus(0, 'ready to go!')
 
 % Starts grabbing
     function startGrab(hObj, ignore)
+        fn = sprintf('%s%s%s%04.0f.mat', prop.grabcfg.dirName, filesep, prop.grabcfg.fileBaseName, prop.grabcfg.fileNumber);
+        if exist(fn, 'file'), warndlg('file exists'), return, end
         stopEditing
         isAcquiring = true;
         set([hTb.Focus hTb.Zstack], 'enable', 'off')
         channelAspRatio(hIm, rig, prop)
         data = grabStream(rig, prop, hIm, @updateStatus);
-        fn = sprintf('%s%s%s%04.0f.mat', prop.grabcfg.dirName, filesep, prop.grabcfg.fileBaseName, prop.grabcfg.fileNumber);
         config = prop.tostruct;
         save(fn, 'data', 'config', '-v7.3');
         fprintf('Saved to file %s \n', fn);
@@ -97,13 +98,14 @@ updateStatus(0, 'ready to go!')
     end
 
     function startZStack(hObj, ignore)
+        fn = sprintf('%s%s%s%04.0f.mat', prop.grabcfg.dirName, filesep, prop.grabcfg.fileBaseName, prop.grabcfg.fileNumber);
+        if exist(fn, 'file'), warndlg('file exists'), return, end
         stopEditing
         set(hTb.Focus, 'enable', 'off')
         updateStatus(NaN, 'Acquiring z-stack...')
         coords = getCoords(prop.grabcfg.stackNumXyz, prop.grabcfg.stackDeltaXyz, prop.grabcfg.stackSequence);
         nSlices = prod(prop.grabcfg.stackNumXyz);
         startPos = rig.stage.getPos;
-        filename = sprintf('%s%s%s%04.0f.mat', prop.grabcfg.dirName, filesep, prop.grabcfg.fileBaseName, prop.grabcfg.fileNumber);
         for iSlice = 1:nSlices
             if ~strcmp(get(hTb.Zstack, 'state'), 'on'), continue, end
             updateStatus(iSlice/nSlices, sprintf('Acquiring slice %d of %d (%s)', iSlice, nSlices, mat2str(coords(iSlice, :))) )
@@ -112,14 +114,14 @@ updateStatus(0, 'ready to go!')
             data = grabStream(rig, prop, hIm, @updateStatus);
             if iSlice == 1
                 sz = size(data); sz(end+1:4) = 1; sz(5) = nSlices;
-                mm = matmap(filename, '/data', sz, 'int16', [sz(1:2)]);
+                mm = matmap(fn, '/data', sz, 'int16', [sz(1:2)]);
             end
             mm(:,:,:,:,iSlice) = data;
         end
         rig.stage.moveAbs(startPos)
         config = prop.tostruct;
-        save(filename, 'config', '-append')
-        fprintf('Saved to file %s \n', filename);
+        save(fn, 'config', '-append')
+        fprintf('Saved to file %s \n', fn);
         set([hTb.Grab hTb.Focus hTb.Zstack], 'enable', 'on', 'state', 'off');
         prop.grabcfg.fileNumber = prop.grabcfg.fileNumber + 1;
         updateStatus(0, 'ready to go!')
