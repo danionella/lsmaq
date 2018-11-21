@@ -103,11 +103,12 @@ updateStatus(0, 'ready to go!')
         coords = getCoords(prop.grabcfg.stackNumXyz, prop.grabcfg.stackDeltaXyz, prop.grabcfg.stackSequence);
         nSlices = prod(prop.grabcfg.stackNumXyz);
         startPos = rig.stage.getPos;
-        filename = [prop.grabcfg.dirName filesep prop.grabcfg.fileBaseName num2str(prop.grabcfg.fileNumber) '.mat'];
+        filename = sprintf('%s%s%s%04.0f.mat', prop.grabcfg.dirName, filesep, prop.grabcfg.fileBaseName, prop.grabcfg.fileNumber);
         for iSlice = 1:nSlices
             if ~strcmp(get(hTb.Zstack, 'state'), 'on'), continue, end
             updateStatus(iSlice/nSlices, sprintf('Acquiring slice %d of %d (%s)', iSlice, nSlices, mat2str(coords(iSlice, :))) )
-            rig.stage.moveAbs(coords(iSlice, :) + startPos); pause(0.1);
+            rig.stage.moveAbs(coords(iSlice, :) + startPos); 
+            pause(0.2);
             data = grabStream(rig, prop, hIm, @updateStatus);
             if iSlice == 1
                 sz = size(data); sz(end+1:4) = 1; sz(5) = nSlices;
