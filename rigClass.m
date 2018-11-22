@@ -146,6 +146,7 @@ classdef rigClass < dynamicprops
             delete(obj.AIlistener)
             for iTask = [{obj.AItask} obj.AOtask]
                 iTask{1}.Stop
+                iTask{1}.Control(NationalInstruments.DAQmx.TaskAction.Unreserve)
             end
             obj.isScanning = false;
         end
