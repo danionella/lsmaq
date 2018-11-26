@@ -1,15 +1,12 @@
 classdef rigClass < dynamicprops
-    %note: a Rig is a device or piece of equipment designed for a particular purpose
-    %rigClass holds all the variables linked with the setup (Analog I/O channels, triggers etc.)
-    %
-
+    %rigClass holds all the variables linked with the setup hardware (Analog I/O channels, triggers etc.)
 
     properties (Constant) %check these settings. If you are not sure about your device names, check NI MAX Automation explorer
         AIrate = 1250000;                         % analog input sample rate in Hz
         AOrate = 250000;                          % analog output sample rate in Hz (should be divisor of AIRate)
-        AIchans = 'Dev1/ai0:1';                   % path to AI channels (primary DAQ card)
+        AIchans = '/Dev1/ai0:1';                  % path to AI channels (primary DAQ card)
         shutterline = '/Dev1/PFI1';               % path to shutter output line (primary DAQ card)
-        AOchans = {'Dev1/ao0:1'};                 % cell array of AO channel paths. For a single AO card, this would be a 1-element cell, e.g. {'Dev1/ao0:1'}, for two cards, this could be {'Dev1/ao0:1', 'Dev2/ao0:2'}
+        AOchans = {'/Dev1/ao0:1'};                % cell array of AO channel paths. For a single AO card, this would be a 1-element cell, e.g. {'Dev1/ao0:1'}, for two cards, this could be {'Dev1/ao0:1', 'Dev2/ao0:2'}
         channelOrder = {[1 2]};                   % cell array of signal to channel assignments. Assign [X,Y,Z,Blank,Phase] signals (in that order, 1-based indexing) to output channels. To assign X to the first output channel, Y to the second, blank to the first of the second card and Z to the second of the second card, use {[1 2], [4 3]}. For a single output card, this could be e.g. {[1 2]}
         stageCOMPort = 'COM10';                   % COM port for Sutter MP285 stage
         stage_uSteps_um = [10 10 25];             % Microsteps per µm. Default: [25 25 25]
@@ -30,7 +27,7 @@ classdef rigClass < dynamicprops
 
     methods
 
-        %rigClass is a function that generates an object "obj" that defines extra dynamic properties
+        %rigClass constructor
         function obj = rigClass(fStatus)
             if nargin < 1
                 fprintf(1, 'Starting up rig:    ');
@@ -70,7 +67,7 @@ classdef rigClass < dynamicprops
             obj.AOtask{1}.ExportSignals.ExportHardwareSignal(ExportSignal.SampleClock, 'PFI7');
             obj.AOtask{1}.Control(TaskAction.Verify);
             obj.AOwriter{1} = AnalogMultiChannelWriter(obj.AOtask{1}.Stream);
-               
+
             for i = 2:numel(obj.AOchans)
                 obj.AOtask{i} = NationalInstruments.DAQmx.Task;
                 obj.AOtask{i}.AOChannels.CreateVoltageChannel(obj.AOchans{2}, '',-10, 10, AOVoltageUnits.Volts);
@@ -115,6 +112,7 @@ classdef rigClass < dynamicprops
         end
 
         function queueOutputData(obj, scannerOut)
+            % called to load data to the output cards
             import NationalInstruments.DAQmx.*
             nsamples = size(scannerOut, 1);
             obj.AOtask{1}.Timing.ConfigureSampleClock('', obj.AOrate, SampleClockActiveEdge.Rising, SampleQuantityMode.ContinuousSamples, nsamples)
@@ -126,6 +124,7 @@ classdef rigClass < dynamicprops
         end
 
         function setupAIlistener(obj, fun, nsamples)
+            % sets up a samples acquired listener (execute <fun> every <nsamples> samples)
             import NationalInstruments.DAQmx.*
             buffersize = max([nsamples*2 1000000]);
             buffersize = ceil(buffersize/nsamples)*nsamples; %to make sure buffer size is an integer multiple of nsamples
@@ -135,6 +134,7 @@ classdef rigClass < dynamicprops
         end
 
         function start(obj)
+            % start AI and AO
             for iTask = [obj.AOtask {obj.AItask}]
                 iTask{1}.Start
             end
@@ -151,6 +151,6 @@ classdef rigClass < dynamicprops
             obj.isScanning = false;
         end
 
-    end
+    end %methods
 
-end
+end %classdef
