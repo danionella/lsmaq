@@ -27,10 +27,9 @@ function [data, scannerOut] = grabStream(rig, prop, hIm, fStatus, fStripe)
 %   29.01.2009: added output of scannerOut to variable svxyz, SS
 %   13.11.2007: added fStripe functionality, BJ
 %   28.04.2006: created, BJ
-%%
+
 scancfg = prop.scancfg;
 grabcfg = prop.grabcfg;
-
 
 % process inputs and outputs
 isGrabbing = (nargout > 0);
@@ -99,7 +98,7 @@ rig.isScanning = false;
     function samplesAcquiredFun(raw)
         nCurrentFrame = floor(iAcquiredLines / scancfg.nLinesPerFrame) + 1;
         if ~rig.isScanning || (isGrabbing && (nCurrentFrame > grabcfg.nFrames)) , rig.isScanning = false; pause(0), return, end
-        
+
         %%GET RAW DATA , SHAPE INTO IMAGE
         %raw = event.Data;
         yIndices = mod(iAcquiredLines, scancfg.nLinesPerFrame) + (1:nLinesPerStripe);
@@ -118,7 +117,7 @@ rig.isScanning = false;
             set(hIm(iChan), 'YData', [1 scancfg.nLinesPerFrame]-0.5);
             set(hIm(iChan), 'CData', mean(outdata(:,:,iChan,:),4)');
         end
-        
+
         if nargin >=6, fStripe(outdata, yIndices); end
         pause(0) %makes this callback interruptable (to stop acquisition)
     end
