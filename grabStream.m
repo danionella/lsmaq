@@ -22,8 +22,8 @@ function [data, scannerOut] = grabStream(rig, prop, hIm, fStatus, fStripe)
 %   See also raw2pixeldata, makeScanPatternXYZ
 %
 %   Revision history:
-%   18.06.2015: Extensive modification to work with session based DAQ,
-%               added z-scanning, INP
+%   01.11.2018: moved all hard-coded DAQ functions to rigClass (and upgraded to .NET interface)
+%   18.06.2015: extensive modification to work with session based DAQ, added z-scanning, INP
 %   29.01.2009: added output of scannerOut to variable svxyz, SS
 %   13.11.2007: added fStripe functionality, BJ
 %   28.04.2006: created, BJ
