@@ -2,7 +2,7 @@ classdef rigClass < dynamicprops
     %rigClass holds all the variables linked with the setup hardware (Analog I/O channels, triggers etc.)
 
     properties (Constant) %check these settings. If you are not sure about your device names, check NI MAX Automation explorer
-        AIrate = 1250000;                         % analog input sample rate in Hz
+        AIrate = 1000000;                         % analog input sample rate in Hz
         AOrate = 250000;                          % analog output sample rate in Hz (should be divisor of AIRate)
         AIchans = '/Dev1/ai0:1';                  % path to AI channels (primary DAQ card)
         shutterline = '/Dev1/PFI1';               % path to shutter output line (primary DAQ card)
@@ -53,7 +53,7 @@ classdef rigClass < dynamicprops
             fStatus(2/6, 'starting up: setting up DAQ...')
             obj.AItask = NationalInstruments.DAQmx.Task;
             obj.AItask.AIChannels.CreateVoltageChannel(obj.AIchans, '', AITerminalConfiguration.Differential,-10, 10, AIVoltageUnits.Volts);
-            obj.AItask.Timing.ConfigureSampleClock('', obj.AIrate, SampleClockActiveEdge.Rising, SampleQuantityMode.ContinuousSamples, 100)
+            obj.AItask.Timing.ConfigureSampleClock('/Dev1/PFI5', obj.AIrate, SampleClockActiveEdge.Rising, SampleQuantityMode.ContinuousSamples, 100)
             obj.AItask.Triggers.StartTrigger.ConfigureDigitalEdgeTrigger('PFI0', DigitalEdgeStartTriggerEdge.Rising);
             %obj.AItask.ExportSignals.ExportHardwareSignal(ExportSignal.StartTrigger, 'PFI0');
             obj.AItask.Control(TaskAction.Verify);
