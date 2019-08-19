@@ -10,10 +10,7 @@ classdef rigClass < dynamicprops
         channelOrder = {[1 2]};                   % cell array of signal to channel assignments. Assign [X,Y,Z,Blank,Phase] signals (in that order, 1-based indexing) to output channels. To assign X to the first output channel, Y to the second, blank to the first of the second card and Z to the second of the second card, use {[1 2], [4 3]}. For a single output card, this could be e.g. {[1 2]}
         stageCOMPort = 'COM10';                   % COM port for Sutter MP285 stage
         stage_uSteps_um = [10 10 25];             % Microsteps per µm. Default: [25 25 25]
-        %SampleClockTimebaseSource = '/Dev1/100MHzTimebase';
-        %SampleClockTimebaseRate = 100e6;
-        SampleClockTimebaseSource = '/Dev1/PFI5';
-        SampleClockTimebaseRate = 1e6;
+        laserSyncPort = '/Dev1/PFI5';             % leave empty if not syncing, sets SampleClock source of AI and TimeBaseSource of AO object, pulse rate is assumed to be AIRate
     end
 
     properties
@@ -57,11 +54,11 @@ classdef rigClass < dynamicprops
             fStatus(2/6, 'starting up: setting up DAQ...')
             obj.AItask = NationalInstruments.DAQmx.Task;
             obj.AItask.AIChannels.CreateVoltageChannel(obj.AIchans, '', AITerminalConfiguration.Differential,-10, 10, AIVoltageUnits.Volts);
-            obj.AItask.Timing.SampleClockTimebaseSource = obj.SampleClockTimebaseSource;
-            obj.AItask.Timing.SampleClockTimebaseRate = obj.SampleClockTimebaseRate;
-            obj.AItask.Timing.ConfigureSampleClock('', obj.AIrate, SampleClockActiveEdge.Rising, SampleQuantityMode.ContinuousSamples, 100)
-            obj.AItask.Triggers.StartTrigger.ConfigureDigitalEdgeTrigger('PFI0', DigitalEdgeStartTriggerEdge.Rising);
-            %obj.AItask.ExportSignals.ExportHardwareSignal(ExportSignal.StartTrigger, 'PFI0');
+            obj.AItask.Timing.ConfigureSampleClock(obj.laserSyncPort, obj.AIrate, SampleClockActiveEdge.Rising, SampleQuantityMode.ContinuousSamples, 100)
+            %obj.AItask.Timing.ConfigureSampleClock('', obj.AIrate, SampleClockActiveEdge.Rising, SampleQuantityMode.ContinuousSamples, 100)
+            %obj.AItask.Timing.SampleClockTimebaseSource = '/Dev1/PFI5';
+            %obj.AItask.Timing.SampleClockTimebaseRate = 4e6;
+            obj.AItask.Triggers.StartTrigger.ConfigureDigitalEdgeTrigger('PFI0', DigitalEdgeStartTriggerEdge.Rising);  %obj.AItask.ExportSignals.ExportHardwareSignal(ExportSignal.StartTrigger, 'PFI0');
             obj.AItask.Control(TaskAction.Verify);
             obj.AIreader = AnalogUnscaledReader(obj.AItask.Stream);
 
@@ -69,9 +66,11 @@ classdef rigClass < dynamicprops
             obj.AOtask{1} = NationalInstruments.DAQmx.Task;
             obj.AOtask{1}.AOChannels.CreateVoltageChannel(obj.AOchans{1}, '',-10, 10, AOVoltageUnits.Volts);
             obj.AOtask{1}.Stream.WriteRegenerationMode = WriteRegenerationMode.AllowRegeneration;
-            obj.AOtask{1}.Timing.SampleClockTimebaseSource = obj.SampleClockTimebaseSource;
-            obj.AOtask{1}.Timing.SampleClockTimebaseRate = obj.SampleClockTimebaseRate;
             obj.AOtask{1}.Timing.ConfigureSampleClock('', obj.AOrate, SampleClockActiveEdge.Rising, SampleQuantityMode.ContinuousSamples, 100)
+            if ~isempty(laserSyncPort)
+                obj.AOtask{1}.Timing.SampleClockTimebaseSource = obj.laserSyncPort;
+                obj.AOtask{1}.Timing.SampleClockTimebaseRate = obj.AIrate;
+            end
             obj.AOtask{1}.Triggers.StartTrigger.ConfigureDigitalEdgeTrigger('PFI0', DigitalEdgeStartTriggerEdge.Rising);
             obj.AOtask{1}.ExportSignals.ExportHardwareSignal(ExportSignal.SampleClock, 'PFI7');
             obj.AOtask{1}.Control(TaskAction.Verify);
