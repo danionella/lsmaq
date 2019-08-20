@@ -8,9 +8,10 @@ classdef rigClass < dynamicprops
         shutterline = '/Dev1/PFI1';               % path to shutter output line (primary DAQ card)
         AOchans = {'/Dev1/ao0:1'};                % cell array of AO channel paths. For a single AO card, this would be a 1-element cell, e.g. {'Dev1/ao0:1'}, for two cards, this could be {'Dev1/ao0:1', 'Dev2/ao0:2'}
         channelOrder = {[1 2]};                   % cell array of signal to channel assignments. Assign [X,Y,Z,Blank,Phase] signals (in that order, 1-based indexing) to output channels. To assign X to the first output channel, Y to the second, blank to the first of the second card and Z to the second of the second card, use {[1 2], [4 3]}. For a single output card, this could be e.g. {[1 2]}
-        stageCOMPort = 'COM10';                   % COM port for Sutter MP285 stage
-        stage_uSteps_um = [10 10 25];             % Microsteps per µm. Default: [25 25 25]
-        laserSyncPort = '/Dev1/PFI5';             % leave empty if not syncing, sets SampleClock source of AI and TimeBaseSource of AO object, pulse rate is assumed to be AIRate
+        stageCOMPort = 'COM3';                    % COM port for Sutter MP285 stage
+        stage_uSteps_um = [10 10 25];             % Microsteps per ??m. Default: [25 25 25]
+        laserSyncPort = 'PFI5';                   % leave empty if not syncing, sets SampleClock source of AI and TimeBaseSource of AO object, pulse rate is assumed to be AIRate
+        polarity = int16(-1);
     end
 
     properties
@@ -53,10 +54,10 @@ classdef rigClass < dynamicprops
             % Setting up device objects
             fStatus(2/6, 'starting up: setting up DAQ...')
             obj.AItask = NationalInstruments.DAQmx.Task;
-            obj.AItask.AIChannels.CreateVoltageChannel(obj.AIchans, '', AITerminalConfiguration.Differential,-10, 10, AIVoltageUnits.Volts);
+            obj.AItask.AIChannels.CreateVoltageChannel(obj.AIchans, '', AITerminalConfiguration.Differential,-2, 2, AIVoltageUnits.Volts);
             obj.AItask.Timing.ConfigureSampleClock(obj.laserSyncPort, obj.AIrate, SampleClockActiveEdge.Rising, SampleQuantityMode.ContinuousSamples, 100)
             %obj.AItask.Timing.ConfigureSampleClock('', obj.AIrate, SampleClockActiveEdge.Rising, SampleQuantityMode.ContinuousSamples, 100)
-            %obj.AItask.Timing.SampleClockTimebaseSource = '/Dev1/PFI5';
+            %obj.AItask.Timing.SampleClockTimebaseSource = 'PFI5';
             %obj.AItask.Timing.SampleClockTimebaseRate = 4e6;
             obj.AItask.Triggers.StartTrigger.ConfigureDigitalEdgeTrigger('PFI0', DigitalEdgeStartTriggerEdge.Rising);  %obj.AItask.ExportSignals.ExportHardwareSignal(ExportSignal.StartTrigger, 'PFI0');
             obj.AItask.Control(TaskAction.Verify);
@@ -136,9 +137,9 @@ classdef rigClass < dynamicprops
             import NationalInstruments.DAQmx.*
             buffersize = max([nsamples*2 1000000]);
             buffersize = ceil(buffersize/nsamples)*nsamples; %to make sure buffer size is an integer multiple of nsamples
-            obj.AItask.Timing.ConfigureSampleClock('',obj.AIrate,SampleClockActiveEdge.Rising,SampleQuantityMode.ContinuousSamples,buffersize);
+            obj.AItask.Timing.ConfigureSampleClock(obj.laserSyncPort,obj.AIrate,SampleClockActiveEdge.Rising,SampleQuantityMode.ContinuousSamples,buffersize);
             obj.AItask.EveryNSamplesReadEventInterval = nsamples;
-            obj.AIlistener = addlistener(obj.AItask, 'EveryNSamplesRead', @(~, ev) fun(obj.AIreader.ReadInt16(nsamples).int16));
+            obj.AIlistener = addlistener(obj.AItask, 'EveryNSamplesRead', @(~, ev) fun(obj.polarity*obj.AIreader.ReadInt16(nsamples).int16));
         end
 
         function start(obj)
