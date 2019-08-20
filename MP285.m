@@ -19,7 +19,7 @@ classdef MP285 < handle
                 try fclose(obj.hPort); delete(obj.hPort), end
             end
             obj.hPort = serial(comport);
-            set(obj.hPort, 'BaudRate', 19200, 'Parity', 'none' , 'Terminator', {'CR', ''}, ...
+            set(obj.hPort, 'BaudRate', 9200, 'Parity', 'none' , 'Terminator', {'CR', ''}, ...
                 'StopBits', 1, 'Timeout', 10, 'Name', 'MP285', 'ErrorFcn', @(varargin) disp('MP285 error!'));
             fopen(obj.hPort);
             if nargin < 2
