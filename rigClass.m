@@ -67,7 +67,7 @@ classdef rigClass < dynamicprops
             obj.AOtask{1}.AOChannels.CreateVoltageChannel(obj.AOchans{1}, '',-10, 10, AOVoltageUnits.Volts);
             obj.AOtask{1}.Stream.WriteRegenerationMode = WriteRegenerationMode.AllowRegeneration;
             obj.AOtask{1}.Timing.ConfigureSampleClock('', obj.AOrate, SampleClockActiveEdge.Rising, SampleQuantityMode.ContinuousSamples, 100)
-            if ~isempty(laserSyncPort)
+            if ~isempty(obj.laserSyncPort)
                 obj.AOtask{1}.Timing.SampleClockTimebaseSource = obj.laserSyncPort;
                 obj.AOtask{1}.Timing.SampleClockTimebaseRate = obj.AIrate;
             end
