@@ -123,17 +123,18 @@ rig.isScanning = false;
     end
 
     function checkCfg()
-        minInSamplesPerLine = rig.AIrate/1000/(1+scancfg.bidirectional);
+        maxGalvoFreq = 1000;
+        minInSamplesPerLine = rig.AIrate/maxGalvoFreq/(1+scancfg.bidirectional);
         if scancfg.nInSamplesPerLine < minInSamplesPerLine
             scancfg.nInSamplesPerLine = minInSamplesPerLine;
-            warning(['Number of sanmples cannot be smaller than ' num2str(minInSamplesPerLine) '. Set automatically to ' num2str(minInSamplesPerLine) '.']);
+            warning(['Number of samples cannot be smaller than ' num2str(minInSamplesPerLine) '. Set automatically to ' num2str(minInSamplesPerLine) '.']);
         end
         if (scancfg.fillLag + scancfg.lineOffset) < 0
             scancfg.lineOffset = scancfg.fillLag;
         elseif (scancfg.fillLag + scancfg.lineOffset) > 1
             scancfg.lineOffset = 1 - scancfg.fillLag;
         end
-        scancfg.fillFraction = floor(scancfg.fillFractionMax*scancfg.nInSamplesPerLine/scancfg.nPixelsPerLine)*scancfg.nPixelsPerLine/scancfg.nInSamplesPerLine;
+        %scancfg.fillFraction = floor(scancfg.fillFractionMax*scancfg.nInSamplesPerLine/scancfg.nPixelsPerLine)*scancfg.nPixelsPerLine/scancfg.nInSamplesPerLine;
     end
 
 end
