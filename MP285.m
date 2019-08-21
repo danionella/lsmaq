@@ -15,8 +15,9 @@ classdef MP285 < handle
         %% initiation
         function obj = MP285(comport, uSteps_per_um)
             obj.hPort = instrfind('Port', comport);
-            if ~isempty(obj.hPort)
-                try fclose(obj.hPort); delete(obj.hPort), end
+            if ~isempty(obj.hPort) && any(strcmp(obj.hPort.Status, 'open'))
+                error(['Port ', comport, ' busy! Type instrfind(''Port'', ''', comport,''');' ])
+                %try fclose(obj.hPort); delete(obj.hPort), end
             end
             obj.hPort = serial(comport);
             set(obj.hPort, 'BaudRate', 9200, 'Parity', 'none' , 'Terminator', {'CR', ''}, ...
@@ -100,7 +101,7 @@ classdef MP285 < handle
         end
         %
         function delete(obj) % class destructor
-            if ~isempty(obj.hPort), fclose(obj.hPort); end
+            if ~isempty(obj.hPort), fclose(obj.hPort); delete(obj.hPort); end
         end
 
         % Helper functions
