@@ -1,4 +1,4 @@
-function  [rig, prop, hIm] = lsmaq
+function  [rig, prop, hIm] = lsmaq(userprops)
 %LSMAQ Starts the lsmaq UI and acquisition engine
 
 %create and configure figure
@@ -10,7 +10,11 @@ end
 addpath([fileparts(mfilename('fullpath')) filesep 'prop'])
 
 %get scan, grab and hardware configuration
-prop = dynamicshell(defaultProps);
+if nargin < 1
+    userprops = @defaultProps;
+end
+[dp, configlist] = userprops();
+prop = dynamicshell(dp);
 
 % Hardware configurations are added as hidden dynamic properties so that they don't overpopulate the GUI
 %prop.addHiddenProp(loadjson([fileparts(mfilename('fullpath')) filesep 'configs' filesep 'hdwConfig.json']))
@@ -57,6 +61,16 @@ updateStatus(0, 'ready to go!')
         hTb.Grab = uitoggletool(hTb.Tb, 'CData', icons.grab, 'TooltipString', 'Grab', 'onCallback', @startGrab, 'offCallback', @stopScanning);
         hTb.Stop = uipushtool(hTb.Tb, 'CData', icons.stop, 'TooltipString', 'Stop', 'ClickedCallback', @stopScanning);
         hTb.Zstack = uitoggletool(hTb.Tb, 'CData', icons.stacks_blue, 'Separator', 'on', 'TooltipString', 'Acquire Stack', 'ClickedCallback', @startZStack, 'offCallback', @stopScanning, 'enable', 'on');
+        
+        hTb.ScanCfg = uisplittool(hTb.Tb, 'CData', icons.scan, 'Separator', 'on', 'TooltipString', 'Scan configuration', 'enable', 'on');
+        for iFn = fieldnames(configlist)'
+            uimenu(hTb.ScanCfg,'Text',iFn{1}, 'MenuSelectedFcn', @(varargin) setprops(configlist.(iFn{1})));
+        end
+        function setprops(cfg)
+            for jFn = fieldnames(cfg)'
+                prop.scancfg.(jFn{1}) = cfg.(jFn{1});
+            end
+        end
     end
 
 % Starts the free-running focusing
@@ -64,7 +78,7 @@ updateStatus(0, 'ready to go!')
         warning('off', 'daq:Session:tooFrequent')
         stopEditing
         updateStatus(NaN, 'focussing...');
-        set([hTb.Grab hTb.Zstack], 'enable', 'off')
+        set([hTb.Grab hTb.Zstack hTb.ScanCfg], 'enable', 'off')
         restartFocus = false;
         channelAspRatio(hIm, rig, prop)
         try
@@ -73,6 +87,7 @@ updateStatus(0, 'ready to go!')
             warning(lasterr)
         end
         set([hTb.Grab hTb.Focus], 'enable', 'on', 'state', 'off');
+        set([hTb.ScanCfg], 'enable', 'on')
         if ~isempty(rig.stage.hPort) set(hTb.Zstack, 'enable', 'on', 'state', 'off'); end
         if restartFocus, restartFocus = false; pause(0.1), set(hTb.Focus, 'state', 'on'); end
         updateStatus(0, 'ready to go!');
@@ -85,13 +100,14 @@ updateStatus(0, 'ready to go!')
         if exist(fn, 'file'), warndlg('file exists'), return, end
         stopEditing
         isAcquiring = true;
-        set([hTb.Focus hTb.Zstack], 'enable', 'off')
-        channelAspRatio(hIm, rig, prop)
-        data = grabStream(rig, prop, hIm, @updateStatus);
+        set([hTb.Focus hTb.Zstack hTb.ScanCfg], 'enable', 'off')
+        channelAspRatio(hIm, rig, prop);tic
+        data = grabStream(rig, prop, hIm, @updateStatus);toc
         config = prop.tostruct;
         save(fn, 'data', 'config', '-v7.3');
         fprintf('Saved to file %s \n', fn);
         set([hTb.Grab hTb.Focus], 'enable', 'on', 'state', 'off');
+        set([hTb.ScanCfg], 'enable', 'on')
         if ~isempty(rig.stage.hPort) set(hTb.Zstack, 'enable', 'on', 'state', 'off'); end
         prop.grabcfg.fileNumber = prop.grabcfg.fileNumber + 1;
         updateStatus(0, 'ready to go!')
@@ -123,7 +139,7 @@ updateStatus(0, 'ready to go!')
         config = prop.tostruct;
         save(fn, 'config', '-append')
         fprintf('Saved to file %s \n', fn);
-        set([hTb.Grab hTb.Focus hTb.Zstack], 'enable', 'on', 'state', 'off');
+        set([hTb.Grab hTb.Focus hTb.Zstack hTb.ScanCfg], 'enable', 'on', 'state', 'off');
         prop.grabcfg.fileNumber = prop.grabcfg.fileNumber + 1;
         updateStatus(0, 'ready to go!')
         pth.Enabled = true;
