@@ -146,7 +146,8 @@ classdef rigClass < dynamicprops
             nsamples = size(scannerOut, 1);
             obj.AOtask{1}.Timing.ConfigureSampleClock('', obj.AOrate, SampleClockActiveEdge.Rising, SampleQuantityMode.ContinuousSamples, nsamples)
             obj.AOwriter{1}.WriteMultiSample(false, scannerOut(:, obj.channelOrder{1})');
-            obj.GateTaskWriter.WriteMultiSamplePort(false, uint32(scannerOut(:, 4)'>0));
+            blank = uint32(scannerOut(:, 4)'>0);
+            obj.GateTaskWriter.WriteMultiSamplePort(false, blank);
             for iWriter = 2:numel(obj.AOwriter)
                 obj.AOtask{iWriter}.Timing.ConfigureSampleClock('PFI7', obj.AOrate, SampleClockActiveEdge.Rising, SampleQuantityMode.ContinuousSamples, nsamples)
                 obj.AOwriter{iWriter}.WriteMultiSample(false, scannerOut(:, obj.channelOrder{iWriter})');
