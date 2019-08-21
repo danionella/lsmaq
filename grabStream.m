@@ -53,6 +53,7 @@ rig.setupAIlistener(@samplesAcquiredFun, nLinesPerStripe * scancfg.nInSamplesPer
 nOutSamplesPerLine = (rig.AOrate / rig.AIrate) * scancfg.nInSamplesPerLine;
 scannerOut =  makeScanPattern(nOutSamplesPerLine, scancfg.fillFraction, scancfg.nLinesPerFrame, scancfg.scanAmp, scancfg.scanOffset, ...
         scancfg.scanAngle, scancfg.bidirectional, scancfg.zoom, scancfg.piezoStepsN, scancfg.phaseStepsN);
+scannerOut(:,1:2) = circshift(scannerOut(:,1:2), round(scancfg.sampleLag));
 rig.queueOutputData(scannerOut); %queueOutputData(rig.aoSession, repmat(scannerOut(:, 1:3), [grabcfg.nFrames 1]));
 
 %     figure(45), plot3(scannerOut(:, 1), scannerOut(:, 2), scannerOut(:, 5)), xlim([-1.1 1.1]), ylim([-1.1 1.1])
@@ -102,7 +103,7 @@ rig.isScanning = false;
         %%GET RAW DATA , SHAPE INTO IMAGE
         %raw = event.Data;
         yIndices = mod(iAcquiredLines, scancfg.nLinesPerFrame) + (1:nLinesPerStripe);
-        outdata(:, yIndices ,:, :) = raw2pixeldata(raw', scancfg.nInSamplesPerLine, scancfg.fillFraction, scancfg.fillLag, scancfg.nPixelsPerLine, scancfg.bidirectional, scancfg.lineOffset);
+        outdata(:, yIndices ,:, :) = raw2pixeldata(raw', scancfg.nInSamplesPerLine, scancfg.fillFraction, 0, scancfg.nPixelsPerLine, scancfg.bidirectional, scancfg.lineOffset);
         iAcquiredLines = iAcquiredLines + nLinesPerStripe;
 
         if isGrabbing
@@ -128,11 +129,6 @@ rig.isScanning = false;
         if scancfg.nInSamplesPerLine < minInSamplesPerLine
             scancfg.nInSamplesPerLine = minInSamplesPerLine;
             warning(['Number of samples cannot be smaller than ' num2str(minInSamplesPerLine) '. Set automatically to ' num2str(minInSamplesPerLine) '.']);
-        end
-        if (scancfg.fillLag + scancfg.lineOffset) < 0
-            scancfg.lineOffset = scancfg.fillLag;
-        elseif (scancfg.fillLag + scancfg.lineOffset) > 1
-            scancfg.lineOffset = 1 - scancfg.fillLag;
         end
         %scancfg.fillFraction = floor(scancfg.fillFractionMax*scancfg.nInSamplesPerLine/scancfg.nPixelsPerLine)*scancfg.nPixelsPerLine/scancfg.nInSamplesPerLine;
     end

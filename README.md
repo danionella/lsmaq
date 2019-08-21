@@ -51,11 +51,11 @@ This file defines the startup scan and grab properties. You can modify this file
 | `nFrames` | Grab this many frames (per slice/tile)
 | `stackNumXyz` | 3-element vector. When acquiring slices or tiles, acquire [x y z] slices/tiles along x, y, and z
 | `stackDeltaXyz` | 3-element vector. Slice/tile separation along [x y z]. Example: to take a stack of 50 slices separated by 5 µm along Z, set stackNumXyz to `[1 1 50]` and stackDeltaXyz to `[0 0 5]`. To acquire a tiled volume of two tiles along X, 3 along Y and 50 slices along Z, with an X/Y tile separation of 200 µm, set stackNumXyz to `[2 3 50]` and stackDeltaXyz to `[200 200 5]`.
-| `stackSequence` | 3-charater string. Aquire slices and tiles in this order. Example: to first move along Z, then X then Y, set this to 'ZXY' (default).
+| `stackSequence` | 3-character string. Aquire slices and tiles in this order. Example: to first move along Z, then X then Y, set this to 'ZXY' (default).
 | **Scan properties** | **Description** |
 | `bidirectional` | Toggle bi-directional scanning. `true` or `false`
 | `fillFraction` | Fraction of the line not used for flyback. Recommendation for a standard 1.25 MHz analog input rate: 0.8192 (this is 1024/1250; having 1024 fill samples per 1 ms line makes binning by orders of 2 convenient)
-| `fillLag` | Lag of the true position versus command position (dimensionless fraction of the line). Typical value: 0.1
+| `sampleLag` | Lag of the true position versus command position in AO samples.
 | `nInSamplesPerLine` | Number of sample per line (including flyback). This setting sets the line rate. At 1.25 MHz, 1250 samples per line would result in a line rate of 1 kHz and 2500 samples in 0.5 kHz.
 | `nLinesPerFrame` | Number of horizontal lines (vertical image size in pixels)
 | `nPixelsPerLine` | Number of pixels per horizontal line (horizontal image size). This setting determines sample binning. `nPixelsPerLine` has to be a divisor of `nInSamplesPerLine * fillFraction`

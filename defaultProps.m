@@ -11,8 +11,7 @@ prop.grabcfg.stackSequence = 'ZXY';         %stack scan sequence e.g. 'ZXY' to s
 
 prop.scancfg.bidirectional = false;         %toggle bidirectional scaning
 prop.scancfg.fillFraction = 800/1000;      %fraction of line not used for flyback
-%prop.scancfg.fillFractionMax = 0.85;
-prop.scancfg.fillLag = 0.1;
+prop.scancfg.sampleLag = -25;
 prop.scancfg.lineOffset = 0;
 prop.scancfg.nInSamplesPerLine = 1000;      %input samples per line. this sets the line rate
 prop.scancfg.nLinesPerFrame = 400;          %number of lines per frame
