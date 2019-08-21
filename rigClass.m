@@ -9,9 +9,10 @@ classdef rigClass < dynamicprops
         AOchans = {'/Dev1/ao0:1'};                % cell array of AO channel paths. For a single AO card, this would be a 1-element cell, e.g. {'Dev1/ao0:1'}, for two cards, this could be {'Dev1/ao0:1', 'Dev2/ao0:2'}
         channelOrder = {[1 2]};                   % cell array of signal to channel assignments. Assign [X,Y,Z,Blank,Phase] signals (in that order, 1-based indexing) to output channels. To assign X to the first output channel, Y to the second, blank to the first of the second card and Z to the second of the second card, use {[1 2], [4 3]}. For a single output card, this could be e.g. {[1 2]}
         stageCOMPort = 'COM3';                    % COM port for Sutter MP285 stage
-        stage_uSteps_um = [10 10 25];             % Microsteps per ??m. Default: [25 25 25]
+        stage_uSteps_um = [10 10 25];             % Microsteps per um. Default: [25 25 25]
         laserSyncPort = 'PFI5';                   % leave empty if not syncing, sets SampleClock source of AI and TimeBaseSource of AO object, pulse rate is assumed to be AIRate
-        polarity = int16(-1);
+        pmtPolarity = int16(-1);
+        gateline = '/Dev1/port0/line0';
     end
 
     properties
@@ -22,6 +23,10 @@ classdef rigClass < dynamicprops
         AOwriter
         TriggerTask
         ShutterTask
+        GateTask
+        GateTaskWriter
+        GateCloseTask
+        GateCloseWriter
         ShutterWriter
         stage
         isScanning = false;
@@ -87,6 +92,21 @@ classdef rigClass < dynamicprops
                 obj.AOwriter{i} = AnalogMultiChannelWriter(obj.AOtask{i}.Stream);
             end
 
+            obj.GateTask = NationalInstruments.DAQmx.Task;
+            obj.GateTask.DOChannels.CreateChannel(obj.gateline,'',ChannelLineGrouping.OneChannelForEachLine);
+            obj.GateTask.Stream.WriteRegenerationMode = WriteRegenerationMode.AllowRegeneration;
+            obj.GateTask.Timing.ConfigureSampleClock('', obj.AOrate, SampleClockActiveEdge.Rising, SampleQuantityMode.ContinuousSamples, 100)
+            obj.GateTask.Timing.SampleClockTimebaseSource = obj.AOtask{1}.Timing.SampleClockTimebaseSource;
+            obj.GateTask.Timing.SampleClockTimebaseRate = obj.AOtask{1}.Timing.SampleClockTimebaseRate;
+            obj.GateTask.Triggers.StartTrigger.ConfigureDigitalEdgeTrigger('PFI0', DigitalEdgeStartTriggerEdge.Rising);
+            obj.GateTask.Control(TaskAction.Verify);
+            obj.GateTaskWriter = DigitalSingleChannelWriter(obj.GateTask.Stream);
+            
+            obj.GateCloseTask = NationalInstruments.DAQmx.Task;
+            obj.GateCloseTask.DOChannels.CreateChannel(obj.gateline,'',ChannelLineGrouping.OneChannelForEachLine);
+            obj.GateCloseTask.Control(TaskAction.Verify);
+            obj.GateCloseWriter = DigitalSingleChannelWriter(obj.GateCloseTask.Stream);
+
             obj.ShutterTask = NationalInstruments.DAQmx.Task;
             obj.ShutterTask.DOChannels.CreateChannel(obj.shutterline,'',ChannelLineGrouping.OneChannelForEachLine);
             obj.ShutterTask.Control(TaskAction.Verify);
@@ -126,6 +146,7 @@ classdef rigClass < dynamicprops
             nsamples = size(scannerOut, 1);
             obj.AOtask{1}.Timing.ConfigureSampleClock('', obj.AOrate, SampleClockActiveEdge.Rising, SampleQuantityMode.ContinuousSamples, nsamples)
             obj.AOwriter{1}.WriteMultiSample(false, scannerOut(:, obj.channelOrder{1})');
+            obj.GateTaskWriter.WriteMultiSamplePort(false, uint32(scannerOut(:, 4)'>0));
             for iWriter = 2:numel(obj.AOwriter)
                 obj.AOtask{iWriter}.Timing.ConfigureSampleClock('PFI7', obj.AOrate, SampleClockActiveEdge.Rising, SampleQuantityMode.ContinuousSamples, nsamples)
                 obj.AOwriter{iWriter}.WriteMultiSample(false, scannerOut(:, obj.channelOrder{iWriter})');
@@ -139,12 +160,12 @@ classdef rigClass < dynamicprops
             buffersize = ceil(buffersize/nsamples)*nsamples; %to make sure buffer size is an integer multiple of nsamples
             obj.AItask.Timing.ConfigureSampleClock(obj.laserSyncPort,obj.AIrate,SampleClockActiveEdge.Rising,SampleQuantityMode.ContinuousSamples,buffersize);
             obj.AItask.EveryNSamplesReadEventInterval = nsamples;
-            obj.AIlistener = addlistener(obj.AItask, 'EveryNSamplesRead', @(~, ev) fun(obj.polarity*obj.AIreader.ReadInt16(nsamples).int16));
+            obj.AIlistener = addlistener(obj.AItask, 'EveryNSamplesRead', @(~, ev) fun(obj.pmtPolarity.*obj.AIreader.ReadInt16(nsamples).int16));
         end
 
         function start(obj)
             % start AI and AO
-            for iTask = [obj.AOtask {obj.AItask}]
+            for iTask = [obj.AOtask {obj.AItask} {obj.GateTask}]
                 iTask{1}.Start
             end
         end
@@ -153,10 +174,14 @@ classdef rigClass < dynamicprops
             % stop everything and cleanup appropriately
             obj.shutterClose;
             delete(obj.AIlistener)
-            for iTask = [{obj.AItask} obj.AOtask]
+ 
+            for iTask = [{obj.AItask} obj.AOtask {obj.GateTask}]
                 iTask{1}.Stop
                 iTask{1}.Control(NationalInstruments.DAQmx.TaskAction.Unreserve)
             end
+            
+            obj.GateCloseWriter.WriteSingleSampleSingleLine(true, false);
+
             obj.isScanning = false;
         end
 
