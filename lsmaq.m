@@ -65,6 +65,7 @@ updateStatus(0, 'ready to go!')
         stopEditing
         updateStatus(NaN, 'focussing...');
         set([hTb.Grab hTb.Zstack], 'enable', 'off')
+        restartFocus = false;
         channelAspRatio(hIm, rig, prop)
         try
             grabStream(rig, prop, hIm, @updateStatus);
@@ -109,7 +110,7 @@ updateStatus(0, 'ready to go!')
         for iSlice = 1:nSlices
             if ~strcmp(get(hTb.Zstack, 'state'), 'on'), continue, end
             updateStatus(iSlice/nSlices, sprintf('Acquiring slice %d of %d (%s)', iSlice, nSlices, mat2str(coords(iSlice, :))) )
-            rig.stage.moveAbs(coords(iSlice, :) + startPos); 
+            rig.stage.moveAbs(coords(iSlice, :) + startPos);
             pause(0.2);
             data = grabStream(rig, prop, hIm, @updateStatus);
             if iSlice == 1
@@ -135,7 +136,7 @@ updateStatus(0, 'ready to go!')
         end
     end
 
-    function stopScanning(hObj, ~)
+    function stopScanning(~, ~)
         rig.shutterClose();
         rig.isScanning = false;
         %uiresume(hChanF(1))
@@ -157,7 +158,8 @@ updateStatus(0, 'ready to go!')
         newzoom = max([newzoom 1]);
         prop.scancfg.zoom = eval(mat2str(newzoom, 3));
         restartFocus = true;
-        uiresume(hChanF(1))
+        stopScanning();
+        %uiresume(hChanF(1))
     end
 
     function stopEditing
