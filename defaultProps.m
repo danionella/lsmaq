@@ -1,7 +1,6 @@
 function prop = defaultProps
 %set default grab and scan properties
 
-prop.grabcfg.Timeout = 300;
 prop.grabcfg.dirName = 'C:\DATA';
 prop.grabcfg.fileBaseName = [datestr(now,'yymmdd') '_n'];
 prop.grabcfg.fileNumber = 1;                %current file number (will be appended to name)
@@ -11,13 +10,13 @@ prop.grabcfg.stackDeltaXyz = [0 0 5];       %stack and tile separation along X/Y
 prop.grabcfg.stackSequence = 'ZXY';         %stack scan sequence e.g. 'ZXY' to scan first along Z, then X, then Y
 
 prop.scancfg.bidirectional = false;         %toggle bidirectional scaning
-prop.scancfg.fillFraction = 1024/1250;      %fraction of line not used for flyback
-prop.scancfg.fillFractionMax = 0.85;
+prop.scancfg.fillFraction = 800/1000;      %fraction of line not used for flyback
+%prop.scancfg.fillFractionMax = 0.85;
 prop.scancfg.fillLag = 0.1;
 prop.scancfg.lineOffset = 0;
-prop.scancfg.nInSamplesPerLine = 2500;      %input samples per line. this sets the line rate
-prop.scancfg.nLinesPerFrame = 256;          %number of lines per frame
-prop.scancfg.nPixelsPerLine = 256;          %number of Pixels per line
+prop.scancfg.nInSamplesPerLine = 1000;      %input samples per line. this sets the line rate
+prop.scancfg.nLinesPerFrame = 400;          %number of lines per frame
+prop.scancfg.nPixelsPerLine = 400;          %number of Pixels per line
 prop.scancfg.piezoStepsN = 1;               %number of evenly spaced piezo steps
 prop.scancfg.phaseStepsN = 1;               %number of evenly spaced piezo steps
 prop.scancfg.scanAmp = [1 -1 0 1 1];        %[X Y] amplitudes (optional: [X,Y,Z,blank,phase] amplitudes)
