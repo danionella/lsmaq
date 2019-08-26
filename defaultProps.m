@@ -12,7 +12,7 @@ prop.grabcfg.powerDecayLength = Inf;        %power decay length in um
 
 prop.scancfg.bidirectional = false;         %toggle bidirectional scaning
 prop.scancfg.fillFraction = 800/1000;       %fraction of line not used for flyback
-prop.scancfg.sampleLag = 100;               %galvo lag in AI samples
+prop.scancfg.sampleLag = 94;               %galvo lag in AI samples
 prop.scancfg.nInSamplesPerLine = 2000;      %input samples per line. this sets the line rate
 prop.scancfg.nLinesPerFrame = 400;          %number of lines per frame
 prop.scancfg.nPixelsPerLine = 400;          %number of Pixels per line
@@ -21,7 +21,7 @@ prop.scancfg.phaseStepsN = 1;               %number of evenly spaced piezo steps
 prop.scancfg.scanAmp = [1 -1 0 1 1];        %[X Y] amplitudes (optional: [X,Y,Z,blank,phase] amplitudes)
 prop.scancfg.scanAngle = 0;                 %in-plane scan angle (optional: angles around [X,Y,Z] axes)
 prop.scancfg.scanOffset = [0 0 0 0 0];      %[X Y] offsets (optional: [X,Y,Z,blank,phase] offsets)
-prop.scancfg.zoom = 2;                      %zoom factor
+prop.scancfg.zoom = 1;                      %zoom factor
 
 
 % DEFAULT
@@ -31,20 +31,20 @@ configs.default_ = temp;
 % b400x400_1ks
 temp = []; %prop.scancfg;
 temp.bidirectional = true;
-temp.nInSamplesPerLine = 1000;
+temp.nInSamplesPerLine = 500;
 temp.fillFraction = 800/1000;
 temp.nLinesPerFrame = 400;
 temp.nPixelsPerLine = 400;
-configs.bi_400x400_1ks = temp;
+configs.bi_400x400_500s = temp;
 
-% b200x200_1ks
+% b200x200_0.5ks
 temp = []; %prop.scancfg
 temp.bidirectional = true;
-temp.nInSamplesPerLine = 1000;
-temp.fillFraction = 800/1000;
+temp.nInSamplesPerLine = 500;
+temp.fillFraction = 0.8;
 temp.nLinesPerFrame = 200;
 temp.nPixelsPerLine = 200;
-configs.bi_200x200_1ks = temp;
+configs.bi_200x200_500s = temp;
 
 % u800x800_2ks
 temp = []; %prop.scancfg
