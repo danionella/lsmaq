@@ -2,17 +2,18 @@ classdef rigClass < dynamicprops
     %rigClass holds all the variables linked with the setup hardware (Analog I/O channels, triggers etc.)
 
     properties (Constant) %check these settings. If you are not sure about your device names, check NI MAX Automation explorer
-        AIrate = 1000000;                         % analog input sample rate in Hz
-        AOrate = 250000;                          % analog output sample rate in Hz (should be divisor of AIRate)
-        AIchans = '/Dev1/ai0:1';                  % path to AI channels (primary DAQ card)
-        shutterline = '/Dev1/PFI1';               % path to shutter output line (primary DAQ card)
-        AOchans = {'/Dev1/ao0:1'};                % cell array of AO channel paths. For a single AO card, this would be a 1-element cell, e.g. {'Dev1/ao0:1'}, for two cards, this could be {'Dev1/ao0:1', 'Dev2/ao0:2'}
-        channelOrder = {[1 2]};                   % cell array of signal to channel assignments. Assign [X,Y,Z,Blank,Phase] signals (in that order, 1-based indexing) to output channels. To assign X to the first output channel, Y to the second, blank to the first of the second card and Z to the second of the second card, use {[1 2], [4 3]}. For a single output card, this could be e.g. {[1 2]}
-        stageCOMPort = 'COM3';                    % COM port for Sutter MP285 stage
-        stage_uSteps_um = [10 10 25];             % Microsteps per um. Default: [25 25 25]
-        laserSyncPort = 'PFI5';                   % leave empty if not syncing, sets SampleClock source of AI and TimeBaseSource of AO object, pulse rate is assumed to be AIRate
-        pmtPolarity = int16(-1);
-        gateline = '/Dev1/port0/line0';
+        AIrate = 1000000;                           % analog input sample rate in Hz
+        AOrate = 250000;                            % analog output sample rate in Hz (should be divisor of AIRate)
+        AIchans = '/Dev1/ai0:1';                    % path to AI channels (primary DAQ card)
+        shutterline = '/Dev1/PFI1';                 % path to shutter output line (primary DAQ card)
+        AOchans = {'/Dev1/ao0:1'};                  % cell array of AO channel paths. For a single AO card, this would be a 1-element cell, e.g. {'Dev1/ao0:1'}, for two cards, this could be {'Dev1/ao0:1', 'Dev2/ao0:2'}
+        channelOrder = {[1 2]};                     % cell array of signal to channel assignments. Assign [X,Y,Z,Blank,Phase] signals (in that order, 1-based indexing) to output channels. To assign X to the first output channel, Y to the second, blank to the first of the second card and Z to the second of the second card, use {[1 2], [4 3]}. For a single output card, this could be e.g. {[1 2]}
+        %stageCOMPort = 'COM3';                     % COM port for Sutter MP285 stage
+        %stage_uSteps_um = [10 10 25];              % Microsteps per um. Default: [25 25 25]
+        laserSyncPort = 'PFI5';                     % leave empty if not syncing, sets SampleClock source of AI and TimeBaseSource of AO object, pulse rate is assumed to be AIRate
+        pmtPolarity = -1;                           % invert PMT polarity, if needed (value: 1 or -1)
+        gateline = '/Dev1/port0/line0';             % path to digital output of gating/blanking signal
+        stageCreator = @() MP285('COM3', [10 10 25]);   %function that will return a stage object (with methods getPos and setPos)
     end
 
     properties
@@ -122,7 +123,7 @@ classdef rigClass < dynamicprops
             obj.TriggerTask.Control(TaskAction.Verify);
 
             fStatus(4/6, 'starting up: adding stage...');
-            obj.stage = MP285(obj.stageCOMPort, obj.stage_uSteps_um);
+            obj.stage = obj.stageCreator();
 
             fStatus(1); fprintf(1, '\n');
         end

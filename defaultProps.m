@@ -29,28 +29,28 @@ temp = prop.scancfg;
 configs.default_ = temp;
 
 % b400x400_1ks
-temp = prop.scancfg;                %this line reverts all props to default that are not listed below
+temp = []; %prop.scancfg;
 temp.bidirectional = true;
 temp.nInSamplesPerLine = 1000;
 temp.fillFraction = 800/1000;
 temp.nLinesPerFrame = 400;
 temp.nPixelsPerLine = 400;
-configs.b400x400_1ks = temp;
+configs.bi_400x400_1ks = temp;
 
 % b200x200_1ks
-temp = prop.scancfg;
+temp = []; %prop.scancfg
 temp.bidirectional = true;
 temp.nInSamplesPerLine = 1000;
 temp.fillFraction = 800/1000;
 temp.nLinesPerFrame = 200;
 temp.nPixelsPerLine = 200;
-configs.b200x200_1ks = temp;
+configs.bi_200x200_1ks = temp;
 
 % u800x800_2ks
-temp = prop.scancfg;
+temp = []; %prop.scancfg
 temp.bidirectional = false;
 temp.nInSamplesPerLine = 2000;
 temp.fillFraction = 800/1000;
 temp.nLinesPerFrame = 800;
 temp.nPixelsPerLine = 800;
-configs.u800x800_2ks = temp;
+configs.uni_800x800_2ks = temp;
