@@ -177,8 +177,9 @@ updateStatus(0, 'ready to go!')
         %changes zoom
         if isAcquiring, return, end
         scrollCount = -event.VerticalScrollCount;
-        newzoom = 2^(round(scrollCount + log(prop.scancfg.zoom)/log(2^(1/4)))/4);
-        newzoom = max([newzoom 1]);
+        stepsperdoubling = 2;
+        newzoom = 2^(round(scrollCount + log(prop.scancfg.zoom)/log(2^(1/stepsperdoubling)))/stepsperdoubling);
+        newzoom = max([newzoom 0.125]);
         prop.scancfg.zoom = eval(mat2str(newzoom, 3));
         restartFocus = true;
         stopScanning();
