@@ -103,7 +103,7 @@ rig.isScanning = false;
         %%GET RAW DATA , SHAPE INTO IMAGE
         %raw = event.Data;
         yIndices = mod(iAcquiredLines, scancfg.nLinesPerFrame) + (1:nLinesPerStripe);
-        outdata(:, yIndices ,:, :) = raw2pixeldata(raw', scancfg.nInSamplesPerLine, scancfg.fillFraction, 0, scancfg.nPixelsPerLine, scancfg.bidirectional, scancfg.lineOffset);
+        outdata(:, yIndices ,:, :) = raw2pixeldata(raw', scancfg.nInSamplesPerLine, scancfg.fillFraction, 0, scancfg.nPixelsPerLine, scancfg.bidirectional);
         iAcquiredLines = iAcquiredLines + nLinesPerStripe;
 
         if isGrabbing

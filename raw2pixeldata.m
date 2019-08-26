@@ -1,4 +1,4 @@
-function out = raw2pixeldata(rawdata, nSamplesPerLine, fillFraction, fillLag, nPixelsPerLine, bidir, lineOffset)
+function out = raw2pixeldata(rawdata, nSamplesPerLine, fillFraction, fillLag, nPixelsPerLine, bidir)
 %RAW2PIXELDATA Converts raw samples from the DAQ card into images. Called
 %   by grabStream/samplesAcquiredFun for each image stripe.
 
@@ -6,7 +6,7 @@ function out = raw2pixeldata(rawdata, nSamplesPerLine, fillFraction, fillLag, nP
 nFillSamplesPerLine = nSamplesPerLine * fillFraction;
 nSamplesPerPixel = 	(nFillSamplesPerLine / nPixelsPerLine);
 startFillOdd = floor(fillLag*(nSamplesPerLine - nFillSamplesPerLine -1));
-startFillEven = floor((fillLag + lineOffset)*(nSamplesPerLine - nFillSamplesPerLine -1));
+startFillEven = floor(fillLag*(nSamplesPerLine - nFillSamplesPerLine -1));
 
 %cropping data (we only need fill fraction of data)
 s = size(rawdata); % s(1)=number of samples in stripe; s(2)=number of channels
