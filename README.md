@@ -55,7 +55,7 @@ This file defines the startup scan and grab properties. You can modify this file
 | **Scan properties** | **Description** |
 | `bidirectional` | Toggle bi-directional scanning. `true` or `false`
 | `fillFraction` | Fraction of the line not used for flyback. Recommendation for a standard 1.25 MHz analog input rate: 0.8192 (this is 1024/1250; having 1024 fill samples per 1 ms line makes binning by orders of 2 convenient)
-| `sampleLag` | Lag of the true position versus command position in AO samples.
+| `sampleLag` | Lag of the true position versus command position in AI samples.
 | `nInSamplesPerLine` | Number of sample per line (including flyback). This setting sets the line rate. At 1.25 MHz, 1250 samples per line would result in a line rate of 1 kHz and 2500 samples in 0.5 kHz.
 | `nLinesPerFrame` | Number of horizontal lines (vertical image size in pixels)
 | `nPixelsPerLine` | Number of pixels per horizontal line (horizontal image size). This setting determines sample binning. `nPixelsPerLine` has to be a divisor of `nInSamplesPerLine * fillFraction`

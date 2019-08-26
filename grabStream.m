@@ -53,7 +53,7 @@ rig.setupAIlistener(@samplesAcquiredFun, nLinesPerStripe * scancfg.nInSamplesPer
 nOutSamplesPerLine = (rig.AOrate / rig.AIrate) * scancfg.nInSamplesPerLine;
 scannerOut =  makeScanPattern(nOutSamplesPerLine, scancfg.fillFraction, scancfg.nLinesPerFrame, scancfg.scanAmp, scancfg.scanOffset, ...
         scancfg.scanAngle, scancfg.bidirectional, scancfg.zoom, scancfg.piezoStepsN, scancfg.phaseStepsN);
-scannerOut(:,1:2) = circshift(scannerOut(:,1:2), round(scancfg.sampleLag));
+scannerOut(:,1:2) = circshift(scannerOut(:,1:2), round(-(rig.AOrate / rig.AIrate) * scancfg.sampleLag));
 rig.queueOutputData(scannerOut); %queueOutputData(rig.aoSession, repmat(scannerOut(:, 1:3), [grabcfg.nFrames 1]));
 
 %     figure(45), plot3(scannerOut(:, 1), scannerOut(:, 2), scannerOut(:, 5)), xlim([-1.1 1.1]), ylim([-1.1 1.1])
