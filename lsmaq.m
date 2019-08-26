@@ -143,10 +143,14 @@ updateStatus(0, 'ready to go!')
             mm(:,:,:,:,iSlice) = data;
         end
         rig.stage.moveAbs(startPos)
+        if ~isempty(rig.powercontrol) && ~isinf(prop.grabcfg.powerDecayLength)
+            rig.powercontrol.setPower(startPower)
+        end
         config = prop.tostruct;
         save(fn, 'config', '-append')
         fprintf('Saved to file %s \n', fn);
-        set([hTb.Grab hTb.Focus hTb.Zstack hTb.ScanCfg], 'enable', 'on', 'state', 'off');
+        set([hTb.Grab hTb.Focus hTb.Zstack ], 'enable', 'on', 'state', 'off');
+        set([hTb.ScanCfg], 'enable', 'on');
         prop.grabcfg.fileNumber = prop.grabcfg.fileNumber + 1;
         updateStatus(0, 'ready to go!')
         pth.Enabled = true;
