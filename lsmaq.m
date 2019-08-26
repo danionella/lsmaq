@@ -77,7 +77,7 @@ updateStatus(0, 'ready to go!')
     function startFocus(hObj, ignore)
         warning('off', 'daq:Session:tooFrequent')
         stopEditing
-        updateStatus(NaN, 'focussing...');
+        %updateStatus(NaN, 'focussing...');
         set([hTb.Grab hTb.Zstack hTb.ScanCfg], 'enable', 'off')
         restartFocus = false;
         channelAspRatio(hIm, rig, prop)
@@ -119,7 +119,7 @@ updateStatus(0, 'ready to go!')
         if exist(fn, 'file'), warndlg('file exists'), return, end
         stopEditing
         set(hTb.Focus, 'enable', 'off')
-        updateStatus(NaN, 'Acquiring z-stack...')
+        updateStatus(NaN, 'Acquiring stacks...')
         coords = getCoords(prop.grabcfg.stackNumXyz, prop.grabcfg.stackDeltaXyz, prop.grabcfg.stackSequence);
         nSlices = prod(prop.grabcfg.stackNumXyz);
         startPos = rig.stage.getPos;

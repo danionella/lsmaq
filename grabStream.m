@@ -65,6 +65,8 @@ set([cax{:}], 'XLim', [0 scancfg.nPixelsPerLine], 'YLim', [0 scancfg.nLinesPerFr
 set(hIm, 'XData', [1 scancfg.nPixelsPerLine]-0.5);
 set(hIm, 'YData', [1 scancfg.nLinesPerFrame]-0.5);
 
+fps = rig.AIrate / (scancfg.nLinesPerFrame * scancfg.nInSamplesPerLine);
+
 %% START
 % restartDio(rig);
 rig.start();
@@ -79,11 +81,9 @@ cleanupObj = onCleanup(@(varargin) rig.stopAndCleanup);
 try
     %WAIT until done
     if isGrabbing
-        %uiwait(ancestor(hIm(1), 'figure')) %WAITING HERE UNTIL DONE
         waitfor(rig, 'isScanning', false)
     else
-        fStatus(NaN, ['live view...']);
-        %uiwait(ancestor(hIm(1), 'figure'))
+        fStatus(NaN, ['live view @ ', num2str(fps, 2), ' fps ...']);
         waitfor(rig, 'isScanning', false)
     end
 catch
@@ -110,7 +110,7 @@ rig.isScanning = false;
             %%copY SINGLE FRAME BUFFER INTO LARGE MULTIFRAME OUTPUT  MATRIX
             data(:, yIndices, :, nCurrentFrame) = outdata(:, yIndices, :);
             percent = (iAcquiredLines / scancfg.nLinesPerFrame) / double(grabcfg.nFrames);
-            fStatus(percent, ['acquiring...']);
+            fStatus(percent, ['acquiring @ ', num2str(fps, 2), ' fps ...']);
         end
         %% update CHANNEL FIGURE WITH LAST IMAGE
         for iChan = 1:length(hIm)
