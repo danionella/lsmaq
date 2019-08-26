@@ -1,14 +1,16 @@
 # LSMAQ
-LSMAQ is a lightweight and flexible laser scanning microscope acquisition software written in MATLAB. It supports National Instruments hardware for galvo-based scanning.
+LSMAQ is a lightweight and flexible laser scanning microscope acquisition software written in MATLAB. It supports National Instruments hardware for galvo-based scanning. Present capabilities include:
+- pulse synchronization with MHz-rate lasers (as in 3P microscopy)
+- tiled volume acquisition
+- arbitrary plane 3D scanning
+- phase-stepping for wavefront shaping / [deep imaging](https://doi.org/10.1038/nphoton.2016.252)
 
 ## Should I use it?
-Most likely not. If you are an end user of laser scanning microscopes, you will probably be well served by existing software packages like [ScanImage](http://scanimage.vidriotechnologies.com). The ScanImage team does a very good job at keeping their software up to date with new developments that most end users are interested in.
+Most likely not. If you are an end user of two-photon microscopes, you will probably be well served by existing software packages like [ScanImage](http://scanimage.vidriotechnologies.com). The ScanImage team does a very good job at keeping their software up to date with new developments that most end users are interested in.
 
-LSMAQ was created by microscope developers aiming for increased flexibility and ease of customisation. Scripting and quick code modification are facilitated by a clear separation between scanning engine and UI frontend, as well as a lightweight and minimal code base. Adding a new custom property to the UI takes a single line.
+To minimize code and maximize flexibility, LSMAQ exposes all scanning parameters, performs few checks on user input and generally assumes that the user knows the hardware limitations of their setup. The LSMAQ team cannot offer support to end users.
 
-To minimize code and maximize flexibility, LSMAQ exposes all scanning parameters, performs very few checks on user input and generally assumes that the user knows the hardware limitations of their setup. The LSMAQ team cannot offer support to end users.
-
-Present capabilities include tiled volume acquisition, arbitrary plane piezo-based scanning and phase-stepping for wavefront shaping / [deep imaging](https://doi.org/10.1038/nphoton.2016.252). LSMAQ supports galvo-based scanning but does not presently support resonant scanners.
+LSMAQ was created by microscope developers aiming for increased flexibility and ease of customisation. Scripting and quick code modification are facilitated by a clear separation between scanning engine and UI frontend, as well as a lightweight and minimal code base. Adding a new custom property to the UI takes a single line. If you are looking for flexibility or free software for three-photon microscopy, give LSMAQ a try.
 
 ## Requirements
 - MATLAB (tested with version 2018b, earlier versions since 2009a likely supported). The DAQ toolbox is *not* required as LSMAQ directly calls NI-DAQmx functions through MATLAB's .NET interface.
@@ -28,6 +30,8 @@ LSMAQ will flexibly support your custom DAQ card wiring as long as that wiring i
 - Connect PFI12 to USER1 using the screw terminals (USER1 will be the trigger output port)
 - Connect USER1 to PFI0 (trigger input)
 - Connect PFI1 to the shutter
+- Optional: wire P0.0 to USER2 and use as laser blanking signal (to laser or Pockels cell)
+- Optional: connect the laser's pulse sync signal to PFI5 (tested with 1 MHz pulse rate)
 
 #### Optional: Secondary DAQ card for additional AO channels (e.g. NI USB-6343):
 - Additional outputs (e.g. to Pockels cell or piezo): AO ports 0, 1, etc
@@ -51,11 +55,12 @@ This file defines the startup scan and grab properties. You can modify this file
 | `nFrames` | Grab this many frames (per slice/tile)
 | `stackNumXyz` | 3-element vector. When acquiring slices or tiles, acquire [x y z] slices/tiles along x, y, and z
 | `stackDeltaXyz` | 3-element vector. Slice/tile separation along [x y z]. Example: to take a stack of 50 slices separated by 5 µm along Z, set stackNumXyz to `[1 1 50]` and stackDeltaXyz to `[0 0 5]`. To acquire a tiled volume of two tiles along X, 3 along Y and 50 slices along Z, with an X/Y tile separation of 200 µm, set stackNumXyz to `[2 3 50]` and stackDeltaXyz to `[200 200 5]`.
-| `stackSequence` | 3-charater string. Aquire slices and tiles in this order. Example: to first move along Z, then X then Y, set this to 'ZXY' (default).
+| `stackSequence` | 3-character string. Aquire slices and tiles in this order. Example: to first move along Z, then X then Y, set this to 'ZXY' (default).
+| `powerDecayLength` | The power decay length constant in µm. When takin z-stacks, the laser power will be adjusted according to p = p<sub>0</sub>⋅e<sup>(-z/powerDecayLength)</sup>. To disable power adjustment, set to `Inf` (default).
 | **Scan properties** | **Description** |
 | `bidirectional` | Toggle bi-directional scanning. `true` or `false`
 | `fillFraction` | Fraction of the line not used for flyback. Recommendation for a standard 1.25 MHz analog input rate: 0.8192 (this is 1024/1250; having 1024 fill samples per 1 ms line makes binning by orders of 2 convenient)
-| `fillLag` | Lag of the true position versus command position (dimensionless fraction of the line). Typical value: 0.1
+| `sampleLag` | Lag of the true position versus command position in analog input samples.
 | `nInSamplesPerLine` | Number of sample per line (including flyback). This setting sets the line rate. At 1.25 MHz, 1250 samples per line would result in a line rate of 1 kHz and 2500 samples in 0.5 kHz.
 | `nLinesPerFrame` | Number of horizontal lines (vertical image size in pixels)
 | `nPixelsPerLine` | Number of pixels per horizontal line (horizontal image size). This setting determines sample binning. `nPixelsPerLine` has to be a divisor of `nInSamplesPerLine * fillFraction`
@@ -107,8 +112,8 @@ rig = rigClass;
 prop = defaultProps;
 %change configuration as needed, for example:
 prop.grabcfg.nFrames = 10;
-prop.scancfg.nLinesPerFrame = 512;
-prop.scancfg.nPixelsPerLine = 512;
+prop.scancfg.nLinesPerFrame = 400;
+prop.scancfg.nPixelsPerLine = 400;
 %acquire:
 data = grabStream(rig, prop);
 ```
@@ -135,8 +140,16 @@ data = grabStream(rig, prop, hIm);
 This is, more or less, what `lsmaq` does – plus colored buttons.
 
 ## Wish list
-- Stage support: right now only the Sutter MP285 stage is supported and this is more hard-coded than necessary. Should be easy to fix, probably once the need for a different stage arises.
+- Stage support: right now only the Sutter MP285 stage is supported. Support for new stages should be easy to add once the need arises.
 - Resonant scanning. Two possible avenues would be to build on top of Vidriotech's code for NI FPGA-based acquisition or interface fast DAQ cards, e.g. from Alazartech (see [Scanbox](https://scanbox.org/) or [ScanImage B](https://ptrrupprecht.wordpress.com/2016/12/01/matlab-code-for-instrument-control-of-a-resonant-scanning-microscope/))
 
 ## Contributors
 Benjamin Judkewitz, Ioannis Papadopoulos, Spencer Smith, Maximilian Hoffmann
+
+## See also
+
+* [ScanImage](https://vidriotechnologies.com/scanimage/)
+* [SimpleMScanner](https://github.com/tenss/SimpleMScanner/)
+* [ScanImageB](https://github.com/PTRRupprecht/Instrument-Control)
+* [HelioScan](http://helioscan.github.io/HelioScan/)
+* [SciScan](http://www.scientifica.uk.com/products/scientifica-sciscan)
