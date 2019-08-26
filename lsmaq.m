@@ -45,7 +45,7 @@ for i=1:double(rig.AItask.AIChannels.Count)
 end
 set([hF hChanF], 'WindowScrollWheelFcn', @mouseWheelCb)
 
-%initialize some global variables to be used by sub-functions
+%initialize some shared variables to be used by sub-functions
 restartFocus = false;
 isAcquiring = false;
 
@@ -74,7 +74,7 @@ updateStatus(0, 'ready to go!')
     end
 
 % Starts the free-running focusing
-    function startFocus(hObj, ignore)
+    function startFocus(hObj, ~)
         warning('off', 'daq:Session:tooFrequent')
         stopEditing
         %updateStatus(NaN, 'focussing...');
@@ -95,7 +95,7 @@ updateStatus(0, 'ready to go!')
     end
 
 % Starts grabbing
-    function startGrab(hObj, ignore)
+    function startGrab(hObj, ~)
         fn = sprintf('%s%s%s%04.0f.mat', prop.grabcfg.dirName, filesep, prop.grabcfg.fileBaseName, prop.grabcfg.fileNumber);
         if exist(fn, 'file'), warndlg('file exists'), return, end
         stopEditing
@@ -114,7 +114,7 @@ updateStatus(0, 'ready to go!')
         pth.Enabled = true;
     end
 
-    function startZStack(hObj, ignore)
+    function startZStack(hObj, ~)
         fn = sprintf('%s%s%s%04.0f.mat', prop.grabcfg.dirName, filesep, prop.grabcfg.fileBaseName, prop.grabcfg.fileNumber);
         if exist(fn, 'file'), warndlg('file exists'), return, end
         stopEditing
