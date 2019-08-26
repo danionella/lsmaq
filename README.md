@@ -135,7 +135,7 @@ data = grabStream(rig, prop, hIm);
 This is, more or less, what `lsmaq` does – plus colored buttons.
 
 ## Wish list
-- Stage support: right now only the Sutter MP285 stage is supported and this is more hard-coded than necessary. Should be easy to fix, probably once the need for a different stage arises.
+- Stage support: right now only the Sutter MP285 stage is supported. Support for new stages should be easy to add once the need arises.
 - Resonant scanning. Two possible avenues would be to build on top of Vidriotech's code for NI FPGA-based acquisition or interface fast DAQ cards, e.g. from Alazartech (see [Scanbox](https://scanbox.org/) or [ScanImage B](https://ptrrupprecht.wordpress.com/2016/12/01/matlab-code-for-instrument-control-of-a-resonant-scanning-microscope/))
 
 ## Contributors
