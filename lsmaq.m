@@ -220,7 +220,7 @@ updateStatus(0, 'ready to go!')
     function channelAspRatio(hIm, rig, prop)
         for j = 1:rig.AItask.AIChannels.Count
             try
-                hIm(j).Parent.DataAspectRatio = [prop.scancfg.nPixelsPerLine/prop.scancfg.nLinesPerFrame*abs(prop.scancfg.scanAmpXYZ(2)/prop.scancfg.scanAmpXYZ(1)) 1 1];
+                hIm(j).Parent.DataAspectRatio = [prop.scancfg.nPixelsPerLine/prop.scancfg.nLinesPerFrame*abs(prop.scancfg.scanAmp(2)/prop.scancfg.scanAmp(1)) 1 1];
             catch
             end
         end
