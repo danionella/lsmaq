@@ -31,7 +31,7 @@ LSMAQ will flexibly support your custom DAQ card wiring as long as that wiring i
 - Connect USER1 to PFI0 (trigger input)
 - Connect PFI1 to the shutter
 - Optional: wire P0.0 to USER2 and use as laser blanking signal (to laser or Pockels cell)
-- Optional: connect the laser's pulse sync signal to PFI5
+- Optional: connect the laser's pulse sync signal to PFI5 (tested with 1 MHz pulse rate)
 
 #### Optional: Secondary DAQ card for additional AO channels (e.g. NI USB-6343):
 - Additional outputs (e.g. to Pockels cell or piezo): AO ports 0, 1, etc
