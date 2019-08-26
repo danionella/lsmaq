@@ -83,7 +83,7 @@ try
     if isGrabbing
         waitfor(rig, 'isScanning', false)
     else
-        fStatus(NaN, ['live view @ ', num2str(fps, 2), ' fps ...']);
+        fStatus(NaN, ['live view @ ', num2str(fps, 3), ' fps ...']);
         waitfor(rig, 'isScanning', false)
     end
 catch
@@ -127,8 +127,9 @@ rig.isScanning = false;
         maxGalvoFreq = 1000;
         minInSamplesPerLine = rig.AIrate/maxGalvoFreq/(1+scancfg.bidirectional);
         if scancfg.nInSamplesPerLine < minInSamplesPerLine
-            scancfg.nInSamplesPerLine = minInSamplesPerLine;
-            warning(['Number of samples cannot be smaller than ' num2str(minInSamplesPerLine) '. Set automatically to ' num2str(minInSamplesPerLine) '.']);
+            %scancfg.nInSamplesPerLine = minInSamplesPerLine;
+            %warning(['Number of samples cannot be smaller than ' num2str(minInSamplesPerLine) '. Set automatically to ' num2str(minInSamplesPerLine) '.']);
+            warning(['Number of samples cannot be smaller than  ' num2str(minInSamplesPerLine) ])
         end
         %scancfg.fillFraction = floor(scancfg.fillFractionMax*scancfg.nInSamplesPerLine/scancfg.nPixelsPerLine)*scancfg.nPixelsPerLine/scancfg.nInSamplesPerLine;
     end
