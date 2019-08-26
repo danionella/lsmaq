@@ -2,17 +2,20 @@ classdef rigClass < dynamicprops
     %rigClass holds all the variables linked with the setup hardware (Analog I/O channels, triggers etc.)
 
     properties (Constant) %check these settings. If you are not sure about your device names, check NI MAX Automation explorer
-        AIrate = 1000000;                           % analog input sample rate in Hz
-        AOrate = 250000;                            % analog output sample rate in Hz (should be divisor of AIRate)
+        AIrate = 1e6;                               % analog input sample rate in Hz
+        AOrate = 1e6/5;                             % analog output sample rate in Hz (has to be divisor of AIrate)
         AIchans = '/Dev1/ai0:1';                    % path to AI channels (primary DAQ card)
         shutterline = '/Dev1/PFI1';                 % path to shutter output line (primary DAQ card)
         AOchans = {'/Dev1/ao0:1'};                  % cell array of AO channel paths. For a single AO card, this would be a 1-element cell, e.g. {'Dev1/ao0:1'}, for two cards, this could be {'Dev1/ao0:1', 'Dev2/ao0:2'}
         channelOrder = {[1 2]};                     % cell array of signal to channel assignments. Assign [X,Y,Z,Blank,Phase] signals (in that order, 1-based indexing) to output channels. To assign X to the first output channel, Y to the second, blank to the first of the second card and Z to the second of the second card, use {[1 2], [4 3]}. For a single output card, this could be e.g. {[1 2]}
-        laserSyncPort = 'PFI5';                     % leave empty if not syncing, sets SampleClock source of AI and TimeBaseSource of AO object, pulse rate is assumed to be AIRate
         pmtPolarity = -1;                           % invert PMT polarity, if needed (value: 1 or -1)
         gateline = '/Dev1/port0/line0';             % path to digital output of gating/blanking signal
         stageCreator = @() MP285('COM3', [10 10 25]);   % function that takes no arguments and returns a stage object (containing methods getPos and setPos) or empty
-        powercontrolCreator = [];                   % function that takes no arguments and returns a powercontro object (containing methods getPos and setPos) or an empty scalar ('@() []')
+        powercontrolCreator = [];                       % function that takes no arguments and returns a powercontrol object (containing methods getPos and setPos) or an empty scalar ('@() []')
+    end
+    
+    properties
+        laserSyncPort = '';                     % leave empty if not syncing, sets SampleClock source of AI and TimeBaseSource of AO object, pulse rate is assumed to be AIRate
     end
     
     properties
@@ -153,9 +156,12 @@ classdef rigClass < dynamicprops
             import NationalInstruments.DAQmx.*
             nsamples = size(scannerOut, 1);
             obj.AOtask{1}.Timing.ConfigureSampleClock('', obj.AOrate, SampleClockActiveEdge.Rising, SampleQuantityMode.ContinuousSamples, nsamples)
+            if ~isempty(obj.laserSyncPort)
+                obj.AOtask{1}.Timing.SampleClockTimebaseSource = obj.laserSyncPort;
+                obj.AOtask{1}.Timing.SampleClockTimebaseRate = obj.AIrate;
+            end
             obj.AOwriter{1}.WriteMultiSample(false, scannerOut(:, obj.channelOrder{1})');
-            blank = uint32(scannerOut(:, 4)'>0);
-            obj.GateTaskWriter.WriteMultiSamplePort(false, blank);
+            obj.GateTaskWriter.WriteMultiSamplePort(false, uint32(scannerOut(:, 4)'>0));
             for iWriter = 2:numel(obj.AOwriter)
                 obj.AOtask{iWriter}.Timing.ConfigureSampleClock('PFI7', obj.AOrate, SampleClockActiveEdge.Rising, SampleQuantityMode.ContinuousSamples, nsamples)
                 obj.AOwriter{iWriter}.WriteMultiSample(false, scannerOut(:, obj.channelOrder{iWriter})');
