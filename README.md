@@ -52,6 +52,7 @@ This file defines the startup scan and grab properties. You can modify this file
 | `stackNumXyz` | 3-element vector. When acquiring slices or tiles, acquire [x y z] slices/tiles along x, y, and z
 | `stackDeltaXyz` | 3-element vector. Slice/tile separation along [x y z]. Example: to take a stack of 50 slices separated by 5 µm along Z, set stackNumXyz to `[1 1 50]` and stackDeltaXyz to `[0 0 5]`. To acquire a tiled volume of two tiles along X, 3 along Y and 50 slices along Z, with an X/Y tile separation of 200 µm, set stackNumXyz to `[2 3 50]` and stackDeltaXyz to `[200 200 5]`.
 | `stackSequence` | 3-character string. Aquire slices and tiles in this order. Example: to first move along Z, then X then Y, set this to 'ZXY' (default).
+| `powerDecayLength` | The power decay length constant in µm. When takin z-stacks, the laser power will be adjusted according to p = p<sub>0</sub>⋅e<sup>(-z/powerDecayLength)</sup>
 | **Scan properties** | **Description** |
 | `bidirectional` | Toggle bi-directional scanning. `true` or `false`
 | `fillFraction` | Fraction of the line not used for flyback. Recommendation for a standard 1.25 MHz analog input rate: 0.8192 (this is 1024/1250; having 1024 fill samples per 1 ms line makes binning by orders of 2 convenient)
