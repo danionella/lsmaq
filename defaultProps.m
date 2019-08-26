@@ -8,6 +8,7 @@ prop.grabcfg.nFrames = 10;                  %number of frames to grab
 prop.grabcfg.stackNumXyz = [1 1 50];        %number of stacks/tiles in X/Y/Z
 prop.grabcfg.stackDeltaXyz = [0 0 5];       %stack and tile separation along X/Y/Z
 prop.grabcfg.stackSequence = 'ZXY';         %stack scan sequence e.g. 'ZXY' to scan first along Z, then X, then Y
+prop.grabcfg.powerDecayLength = Inf;        %power decay length in um
 
 prop.scancfg.bidirectional = false;         %toggle bidirectional scaning
 prop.scancfg.fillFraction = 800/1000;      %fraction of line not used for flyback

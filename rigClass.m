@@ -16,6 +16,10 @@ classdef rigClass < dynamicprops
     end
 
     properties
+        powercontrol % = hwpower_2019('COM14', false)
+    end
+    
+    properties
         AItask
         AIreader
         AIlistener

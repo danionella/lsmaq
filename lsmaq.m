@@ -22,14 +22,14 @@ prop = dynamicshell(dp);
 % Property window
 hF = figure;
 set(hF, 'NumberTitle', 'off', 'Name', 'lsmaq', 'CloseRequestFcn', @CloseRequestFcn, 'Tag', 'lsmaq',...
-    'ToolBar', 'none', 'MenuBar', 'none', 'resize', 'off', 'DockControls', 'off', 'Position', [0 250 220 485])
+    'ToolBar', 'none', 'MenuBar', 'none', 'resize', 'off', 'DockControls', 'off', 'Position', [0 250 250 485])
 hTb = makeToolBar(hF);
 movegui(hF, [5+1, -5]); drawnow
 
 %property inspector (main gui)
 [pph, pt, ptmh, ppc] = prop.inspect(hF);
 pth = handle(pt);
-set(ppc, 'units', 'pixels', 'Position', [1 1 220 485-21])
+set(ppc, 'units', 'pixels', 'Position', [1 1 250 485-21])
 setCustomCellEditor(ptmh, 'grabcfg.dirName', @(dp, button) dp.setValue(['''', uigetdir, '''']));
 
 %status bar
@@ -41,7 +41,7 @@ rig = rigClass(@updateStatus);
 
 %create channel figures
 for i=1:double(rig.AItask.AIChannels.Count)
-    [hIm(i), hChanF(i)] = chanfig(i); movegui([220+15+(i-1)*(512+10), -5])
+    [hIm(i), hChanF(i)] = chanfig(i); movegui([250+15+(i-1)*(512+10), -5])
 end
 set([hF hChanF], 'WindowScrollWheelFcn', @mouseWheelCb)
 
@@ -57,12 +57,12 @@ updateStatus(0, 'ready to go!')
     function hTb = makeToolBar(hF)
         hTb.Tb = uitoolbar(hF);
         icons = load('lsmaq_icons'); icons = icons.icons;
-        hTb.Focus = uitoggletool(hTb.Tb, 'CData', icons.focus, 'TooltipString', 'Focus', 'onCallback', @startFocus, 'offCallback', @stopScanning);
+        hTb.Focus = uitoggletool(hTb.Tb, 'CData', icons.focus, 'TooltipString', 'Live View', 'onCallback', @startFocus, 'offCallback', @stopScanning);
         hTb.Grab = uitoggletool(hTb.Tb, 'CData', icons.grab, 'TooltipString', 'Grab', 'onCallback', @startGrab, 'offCallback', @stopScanning);
         hTb.Stop = uipushtool(hTb.Tb, 'CData', icons.stop, 'TooltipString', 'Stop', 'ClickedCallback', @stopScanning);
-        hTb.Zstack = uitoggletool(hTb.Tb, 'CData', icons.stacks_blue, 'Separator', 'on', 'TooltipString', 'Acquire Stack', 'ClickedCallback', @startZStack, 'offCallback', @stopScanning, 'enable', 'on');
+        hTb.Zstack = uitoggletool(hTb.Tb, 'CData', icons.stacks_blue, 'Separator', 'on', 'TooltipString', 'Acquire Stack/Tiles', 'ClickedCallback', @startZStack, 'offCallback', @stopScanning, 'enable', 'on');
         
-        hTb.ScanCfg = uisplittool(hTb.Tb, 'CData', icons.scan, 'Separator', 'on', 'TooltipString', 'Scan configuration', 'enable', 'on');
+        hTb.ScanCfg = uisplittool(hTb.Tb, 'CData', icons.scan, 'Separator', 'on', 'TooltipString', 'Scan Configuration', 'enable', 'on');
         for iFn = fieldnames(configlist)'
             uimenu(hTb.ScanCfg,'Text',iFn{1}, 'MenuSelectedFcn', @(varargin) setprops(configlist.(iFn{1})));
         end
@@ -123,11 +123,18 @@ updateStatus(0, 'ready to go!')
         coords = getCoords(prop.grabcfg.stackNumXyz, prop.grabcfg.stackDeltaXyz, prop.grabcfg.stackSequence);
         nSlices = prod(prop.grabcfg.stackNumXyz);
         startPos = rig.stage.getPos;
+        if ~isempty(rig.powercontrol) && ~isinf(prop.grabcfg.powerDecayLength)
+            startPower = rig.powercontrol.getPower; 
+        end
         for iSlice = 1:nSlices
             if ~strcmp(get(hTb.Zstack, 'state'), 'on'), continue, end
             updateStatus(iSlice/nSlices, sprintf('Acquiring slice %d of %d (%s)', iSlice, nSlices, mat2str(coords(iSlice, :))) )
+            if ~isempty(rig.powercontrol) && ~isinf(prop.grabcfg.powerDecayLength) && (coords(iSlice, 3) ~= 0)
+                rig.powercontrol.setPower(startPower * exp(-coords(iSlice, 3)/prop.grabcfg.powerDecayLength));
+                pause(0.25)
+            end
             rig.stage.moveAbs(coords(iSlice, :) + startPos);
-            pause(0.2);
+            pause(0.25);
             data = grabStream(rig, prop, hIm, @updateStatus);
             if iSlice == 1
                 sz = size(data); sz(end+1:4) = 1; sz(5) = nSlices;
@@ -189,7 +196,7 @@ updateStatus(0, 'ready to go!')
     function updateStatus(percent, text)
         % I think this part sometimes causes errors
         if isempty(statusBar)
-            [statusBar, ~] = javacomponent(javax.swing.JProgressBar, [1 1+485-20 220 20]);
+            [statusBar, ~] = javacomponent(javax.swing.JProgressBar, [1 1+485-20 250 20]);
             statusBar.StringPainted = true;
             statusBar.BorderPainted = false;
         end
