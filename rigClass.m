@@ -163,9 +163,13 @@ classdef rigClass < dynamicprops
             if ~isempty(obj.laserSyncPort)
                 obj.AOtask{1}.Timing.SampleClockTimebaseSource = obj.laserSyncPort;
                 obj.AOtask{1}.Timing.SampleClockTimebaseRate = obj.AIrate;
+                obj.GateTask.Timing.SampleClockTimebaseSource = obj.laserSyncPort;
+                obj.GateTask.Timing.SampleClockTimebaseRate = obj.AIrate;
             else
                 obj.AOtask{1}.Timing.SampleClockTimebaseSource = '100MHzTimebase';
                 obj.AOtask{1}.Timing.SampleClockTimebaseRate = 100e6;
+                obj.GateTask.Timing.SampleClockTimebaseSource = '100MHzTimebase';
+                obj.GateTask.Timing.SampleClockTimebaseRate = 100e6;
             end
             obj.AOwriter{1}.WriteMultiSample(false, scannerOut(:, obj.channelOrder{1})');
             obj.GateTaskWriter.WriteMultiSamplePort(false, uint32(scannerOut(:, 4)'>0));
