@@ -21,7 +21,7 @@ classdef MP285 < handle
             end
             obj.hPort = serial(comport);
             set(obj.hPort, 'BaudRate', 9200, 'Parity', 'none' , 'Terminator', {'CR', ''}, ...
-                'StopBits', 1, 'Timeout', 10, 'Name', 'MP285', 'ErrorFcn', @(varargin) disp('MP285 error!'));
+                'StopBits', 1, 'Timeout', 5, 'Name', 'MP285', 'ErrorFcn', @(varargin) disp('MP285 error!'));
             fopen(obj.hPort);
             if nargin < 2
                 uSteps_per_um = [25 25 25];
