@@ -61,7 +61,7 @@ updateStatus(0, 'ready to go!')
         hTb.Grab = uitoggletool(hTb.Tb, 'CData', icons.grab, 'TooltipString', 'Grab', 'onCallback', @startGrab, 'offCallback', @stopScanning);
         hTb.Stop = uipushtool(hTb.Tb, 'CData', icons.stop, 'TooltipString', 'Stop', 'ClickedCallback', @stopScanning);
         hTb.Zstack = uitoggletool(hTb.Tb, 'CData', icons.stacks_blue, 'Separator', 'on', 'TooltipString', 'Acquire Stack/Tiles', 'ClickedCallback', @startZStack, 'offCallback', @stopScanning, 'enable', 'on');
-        
+
         hTb.ScanCfg = uisplittool(hTb.Tb, 'CData', icons.scan, 'Separator', 'on', 'TooltipString', 'Scan Configuration', 'enable', 'on');
         for iFn = fieldnames(configlist)'
             uimenu(hTb.ScanCfg,'Text',iFn{1}, 'MenuSelectedFcn', @(varargin) setprops(configlist.(iFn{1})));
@@ -124,7 +124,7 @@ updateStatus(0, 'ready to go!')
         nSlices = prod(prop.grabcfg.stackNumXyz);
         startPos = rig.stage.getPos;
         if ~isempty(rig.powercontrol) && ~isinf(prop.grabcfg.powerDecayLength)
-            startPower = rig.powercontrol.getPower; 
+            startPower = rig.powercontrol.getPower;
         end
         for iSlice = 1:nSlices
             if ~strcmp(get(hTb.Zstack, 'state'), 'on'), continue, end
@@ -177,8 +177,9 @@ updateStatus(0, 'ready to go!')
         %changes zoom
         if isAcquiring, return, end
         scrollCount = -event.VerticalScrollCount;
-        newzoom = 2^(round(scrollCount + log(prop.scancfg.zoom)/log(2^(1/4)))/4);
-        newzoom = max([newzoom 1]);
+        steps = 3;
+        newzoom = 2^(round(scrollCount + log(prop.scancfg.zoom)/log(2^(1/steps)))/steps);
+        newzoom = max([newzoom 0.125]);
         prop.scancfg.zoom = eval(mat2str(newzoom, 3));
         restartFocus = true;
         stopScanning();
