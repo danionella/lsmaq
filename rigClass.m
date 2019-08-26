@@ -13,11 +13,8 @@ classdef rigClass < dynamicprops
         laserSyncPort = 'PFI5';                     % leave empty if not syncing, sets SampleClock source of AI and TimeBaseSource of AO object, pulse rate is assumed to be AIRate
         pmtPolarity = -1;                           % invert PMT polarity, if needed (value: 1 or -1)
         gateline = '/Dev1/port0/line0';             % path to digital output of gating/blanking signal
-        stageCreator = @() MP285('COM3', [10 10 25]);   %function that will return a stage object (with methods getPos and setPos)
-    end
-
-    properties
-        powercontrol % = hwpower_2019('COM14', false)
+        stageCreator = @() MP285('COM3', [10 10 25]);   %function that takes no arguments and returns a stage object (containing methods getPos and setPos) or an empty double
+        powercontrolCreator = @() [];                   %function that takes no arguments and returns a powercontro object (containing methods getPos and setPos) or an empty scalar ('@() []')
     end
     
     properties
@@ -34,6 +31,7 @@ classdef rigClass < dynamicprops
         GateCloseWriter
         ShutterWriter
         stage
+        powercontrol
         isScanning = false;
     end
 
@@ -124,6 +122,9 @@ classdef rigClass < dynamicprops
 
             fStatus(4/6, 'starting up: adding stage...');
             obj.stage = obj.stageCreator();
+            
+            fStatus(5/6, 'starting up: adding power control...');
+            obj.powercontrol = obj.powercontrolCreator();
 
             fStatus(1); fprintf(1, '\n');
         end
