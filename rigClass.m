@@ -3,7 +3,8 @@ classdef rigClass < dynamicprops
 
     properties (Constant) %check these settings. If you are not sure about your device names, check NI MAX Automation explorer
         AIrate = 1e6;                               % analog input sample rate in Hz
-        AOrate = 1e6/5;                             % analog output sample rate in Hz (has to be divisor of AIrate)
+        AOrate = 1e6/2;                             % analog output sample rate in Hz (has to be divisor of AIrate)
+        AIrange = [-1 1];                           % analog input voltage range (2-element vector)
         AIchans = '/Dev1/ai0:1';                    % path to AI channels (primary DAQ card)
         shutterline = '/Dev1/PFI1';                 % path to shutter output line (primary DAQ card)
         AOchans = {'/Dev1/ao0:1'};                  % cell array of AO channel paths. For a single AO card, this would be a 1-element cell, e.g. {'Dev1/ao0:1'}, for two cards, this could be {'Dev1/ao0:1', 'Dev2/ao0:2'}
@@ -63,7 +64,7 @@ classdef rigClass < dynamicprops
             % Setting up device objects
             fStatus(2/6, 'starting up: setting up DAQ...')
             obj.AItask = NationalInstruments.DAQmx.Task;
-            obj.AItask.AIChannels.CreateVoltageChannel(obj.AIchans, '', AITerminalConfiguration.Differential,-2, 2, AIVoltageUnits.Volts);
+            obj.AItask.AIChannels.CreateVoltageChannel(obj.AIchans, '', AITerminalConfiguration.Differential,obj.AIrange(1),obj.AIrange(2), AIVoltageUnits.Volts);
             obj.AItask.Timing.ConfigureSampleClock(obj.laserSyncPort, obj.AIrate, SampleClockActiveEdge.Rising, SampleQuantityMode.ContinuousSamples, 100)
             %obj.AItask.Timing.ConfigureSampleClock('', obj.AIrate, SampleClockActiveEdge.Rising, SampleQuantityMode.ContinuousSamples, 100)
             %obj.AItask.Timing.SampleClockTimebaseSource = 'PFI5';
@@ -80,6 +81,9 @@ classdef rigClass < dynamicprops
             if ~isempty(obj.laserSyncPort)
                 obj.AOtask{1}.Timing.SampleClockTimebaseSource = obj.laserSyncPort;
                 obj.AOtask{1}.Timing.SampleClockTimebaseRate = obj.AIrate;
+            else
+                obj.AOtask{1}.Timing.SampleClockTimebaseSource = '100MHzTimebase';
+                obj.AOtask{1}.Timing.SampleClockTimebaseRate = 100e6;
             end
             obj.AOtask{1}.Triggers.StartTrigger.ConfigureDigitalEdgeTrigger('PFI0', DigitalEdgeStartTriggerEdge.Rising);
             obj.AOtask{1}.ExportSignals.ExportHardwareSignal(ExportSignal.SampleClock, 'PFI7');
@@ -159,6 +163,9 @@ classdef rigClass < dynamicprops
             if ~isempty(obj.laserSyncPort)
                 obj.AOtask{1}.Timing.SampleClockTimebaseSource = obj.laserSyncPort;
                 obj.AOtask{1}.Timing.SampleClockTimebaseRate = obj.AIrate;
+            else
+                obj.AOtask{1}.Timing.SampleClockTimebaseSource = '100MHzTimebase';
+                obj.AOtask{1}.Timing.SampleClockTimebaseRate = 100e6;
             end
             obj.AOwriter{1}.WriteMultiSample(false, scannerOut(:, obj.channelOrder{1})');
             obj.GateTaskWriter.WriteMultiSamplePort(false, uint32(scannerOut(:, 4)'>0));
