@@ -7,10 +7,10 @@ rigprops.AIrate = 1e6;                               % analog input sample rate 
 rigprops.AOrate = 1e6/2;                             % analog output sample rate in Hz (has to be divisor of AIrate)
 rigprops.AIrange = [-1 1];                           % analog input voltage range (2-element vector)
 rigprops.AOchans = {'/Dev1/ao0:1'};                  % cell array of AO channel paths. For a single AO card, this would be a 1-element cell, e.g. {'Dev1/ao0:1'}, for two cards, this could be {'Dev1/ao0:1', 'Dev2/ao0:2'}
-rigprops.pmtPolarity = -1;                           % invert PMT polarity, if needed (value: 1 or -1)
+rigprops.pmtPolarity = 1;                            % invert PMT polarity, if needed (value: 1 or -1)
 rigprops.stageCreator = @() MP285('COM3', [10 10 25]);	% function that takes no arguments and returns a stage object (containing methods getPos and setPos, e.g. @() MP285('COM3', [10 10 25])) or empty
 rigprops.powercontrolCreator = [];                   % function that takes no arguments and returns a powercontrol object (containing methods getPower and setPower)
-rigprops.laserSyncPort = '';                     % leave empty if not syncing, sets SampleClock source of AI and TimeBaseSource of AO object, pulse rate is assumed to be AIRate
+rigprops.laserSyncPort = '';                         % leave empty if not syncing, sets SampleClock source of AI and TimeBaseSource of AO object, pulse rate is assumed to be AIRate
 
 % DEFAULT (STARTUP) GRAB AND SCAN PROPERTIES
 prop.grabcfg.dirName = 'C:\DATA';
@@ -23,11 +23,11 @@ prop.grabcfg.stackSequence = 'ZXY';         %stack scan sequence e.g. 'ZXY' to s
 prop.grabcfg.powerDecayLength = Inf;        %power decay length in um
 prop.scancfg.bidirectional = false;         %toggle bidirectional scaning
 prop.scancfg.fillFraction = 800/1000;       %fill fraction (fraction samples not used for flyback)
-prop.scancfg.sampleLag = 94;                %galvo lag in AI samples
+prop.scancfg.sampleLag = 100;                %galvo lag in AI samples
 prop.scancfg.nInSamplesPerLine = 2000;      %input samples per line. this sets the line rate
 prop.scancfg.nLinesPerFrame = 400;          %number of lines per frame
 prop.scancfg.nPixelsPerLine = 400;          %number of Pixels per line
-prop.scancfg.scanAmp = [1 -1 0 1 1];        %[X Y] amplitudes (optional: [X,Y,Z,blank,phase] amplitudes)
+prop.scancfg.scanAmp = [1 1 0 1 1];         %[X Y] amplitudes (optional: [X,Y,Z,blank,phase] amplitudes)
 prop.scancfg.zoom = 1;                      %zoom factor
 
 % ALTERNATIVE SCAN CONFIGURATIONS (can be selected from UI dropdown list)
@@ -37,8 +37,8 @@ scanconfigs.bi_400x400_500s = struct('bidirectional', true, 'nInSamplesPerLine',
 scanconfigs.bi_200x200_500s = struct('bidirectional', true, 'nInSamplesPerLine', 500, ...
     'fillFraction',  0.8, 'nLinesPerFrame', 200, 'nPixelsPerLine', 200, 'scanAmp', [1 1 0 1 1]);
 scanconfigs.bi_200x100_500s_aniso = struct('bidirectional', true, 'nInSamplesPerLine', 500, ...
-    'fillFraction',  0.8, 'nLinesPerFrame', 200, 'nPixelsPerLine', 200, 'scanAmp', [1 1 0 1 1]);
+    'fillFraction',  0.8, 'nLinesPerFrame', 200, 'nPixelsPerLine', 100, 'scanAmp', [1 1 0 1 1]);
 scanconfigs.bi_200x100_500s_iso = struct('bidirectional', true, 'nInSamplesPerLine', 500, ...
-    'fillFraction',  0.8, 'nLinesPerFrame', 200, 'nPixelsPerLine', 200, 'scanAmp', [1 0.5 0 1 1]);
+    'fillFraction',  0.8, 'nLinesPerFrame', 200, 'nPixelsPerLine', 100, 'scanAmp', [1 0.5 0 1 1]);
 scanconfigs.uni_800x800_2ks = struct('bidirectional', true, 'nInSamplesPerLine', 2000, ...
     'fillFraction',  0.8, 'nLinesPerFrame', 800, 'nPixelsPerLine', 800, 'scanAmp', [1 1 0 1 1]);
