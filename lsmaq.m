@@ -73,7 +73,7 @@ updateStatus(0, 'ready to go!')
 
 % Starts the free-running focusing
     function startFocus(~, ~)
-        warning('off', 'daq:Session:tooFrequent')
+        %warning('off', 'daq:Session:tooFrequent')
         stopEditing
         %updateStatus(NaN, 'focussing...');
         set([hTb.Grab hTb.Zstack hTb.ScanCfg], 'enable', 'off')
@@ -90,7 +90,7 @@ updateStatus(0, 'ready to go!')
         set([hTb.Grab hTb.Focus hTb.Zstack], 'enable', 'on', 'state', 'off');
         set([hTb.ScanCfg], 'enable', 'on')
         if restartFocus, restartFocus = false; pause(0.1), set(hTb.Focus, 'state', 'on'); end
-        
+
         pth.Enabled = true;
     end
 
@@ -104,7 +104,7 @@ updateStatus(0, 'ready to go!')
         channelAspRatio(hIm, rig, prop);
         try
             tic
-            data = grabStream(rig, prop, hIm, @updateStatus); 
+            data = grabStream(rig, prop, hIm, @updateStatus);
             toc
             config = prop.tostruct;
             save(fn, 'data', 'config', '-v7.3');
@@ -177,7 +177,7 @@ updateStatus(0, 'ready to go!')
     end
 
     function CloseRequestFcn(hF, ~)
-        try 
+        try
             rig.stopAndCleanup()
         catch ME
             warning(ME.identifier, '%s', ME.message)
