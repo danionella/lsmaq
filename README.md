@@ -150,6 +150,6 @@ Benjamin Judkewitz, Ioannis Papadopoulos, Spencer Smith, Maximilian Hoffmann
 
 * [ScanImage](https://vidriotechnologies.com/scanimage/)
 * [SimpleMScanner](https://github.com/tenss/SimpleMScanner/)
-* [ScanImageB](https://github.com/PTRRupprecht/Instrument-Control)
+* [ACQ4](https://github.com/acq4/acq4)
+* [PTRRupprecht/Instrument-Control](https://github.com/PTRRupprecht/Instrument-Control)
 * [HelioScan](http://helioscan.github.io/HelioScan/)
-* [SciScan](http://www.scientifica.uk.com/products/scientifica-sciscan)
