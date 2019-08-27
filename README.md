@@ -22,7 +22,7 @@ LSMAQ was created by microscope developers aiming for increased flexibility and 
 3. Open/edit rigClass.m to confirm that is reflects your DAQ hardware and wiring (see below)
 
 ## Wiring
-LSMAQ will flexibly support your custom DAQ card wiring as long as that wiring is configured in rigClass.m. To make your life easier and minimise the edits needed, we suggest using the following default hardware wiring:
+LSMAQ will flexibly support your custom DAQ card wiring as long as that wiring is configured in defaultConfig.m or your custom configuration file. To make your life easier and minimise the edits needed, we suggest using the following default hardware wiring:
 
 #### Primary DAQ card (e.g. NI USB-6356):
 - PMT inputs: AI ports 0 and 1 (up to 8 input channels supported)
@@ -41,7 +41,7 @@ LSMAQ will flexibly support your custom DAQ card wiring as long as that wiring i
 ## Configure / customize
 
 #### defaultConfig.m
-This file defines the startup scan and grab properties, as well as your hardware configuration. Open this file and review the RIG CONFIGURATION section to make sure the settings reflect your hardware and wiring. You can also modify the grab and scan configuration in this file or start LSMAQ (section below) to adjust the properties in the UI.
+This file defines the startup scan and grab properties, as well as your hardware configuration. Open this file and review the *rig configuration* section to make sure the settings reflect your hardware and wiring. You can also modify the grab and scan configuration in this file or start LSMAQ (section below) to adjust the properties in the UI.
 
 ## Properties
 
