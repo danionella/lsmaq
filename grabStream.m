@@ -69,6 +69,7 @@ fps = rig.AIrate / (scancfg.nLinesPerFrame * scancfg.nInSamplesPerLine);
 
 %% START
 % restartDio(rig);
+t = tic;
 rig.start();
 
 rig.shutterOpen()
@@ -110,7 +111,10 @@ rig.isScanning = false;
             %%copY SINGLE FRAME BUFFER INTO LARGE MULTIFRAME OUTPUT  MATRIX
             data(:, yIndices, :, nCurrentFrame) = outdata(:, yIndices, :);
             percent = (iAcquiredLines / scancfg.nLinesPerFrame) / double(grabcfg.nFrames);
-            fStatus(percent, ['acquiring @ ', num2str(fps, 2), ' fps ...']);
+            if toc(t) >= 0.2 %refreshing too often will overload the system
+                fStatus(percent, ['acquiring @ ', num2str(fps, 2), ' fps ...']);
+                t = tic;
+            end
         end
         %% update CHANNEL FIGURE WITH LAST IMAGE
         for iChan = 1:length(hIm)
