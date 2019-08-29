@@ -4,7 +4,6 @@ LSMAQ is a lightweight and flexible laser scanning microscope acquisition softwa
 - tiled volume acquisition
 - arbitrary plane 3D scanning
 - phase-stepping for wavefront shaping / [deep imaging](https://doi.org/10.1038/nphoton.2016.252)
-- your custom functionality added in a few lines (by you)
 
 ## Should I use it?
 Most likely not. If you are an end user of two-photon microscopes, you will probably be well served by existing software packages like [ScanImage](http://scanimage.vidriotechnologies.com). The ScanImage team does a very good job at keeping their software up to date with new developments that most paying end users are interested in.
