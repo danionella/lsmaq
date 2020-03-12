@@ -28,6 +28,8 @@ classdef rigClass < dynamicprops
         AIlistener
         AOtask
         AOwriter
+        ParkTask
+        ParkWriter
         TriggerTask
         ShutterTask
         GateTask
@@ -104,6 +106,13 @@ classdef rigClass < dynamicprops
                 obj.AOtask{i}.Control(TaskAction.Verify);
                 obj.AOwriter{i} = AnalogMultiChannelWriter(obj.AOtask{i}.Stream);
             end
+            
+            for i = 1:numel(obj.AOchans)
+                obj.ParkTask{i} = NationalInstruments.DAQmx.Task;
+                obj.ParkTask{i}.AOChannels.CreateVoltageChannel(obj.AOchans{1}, '',-10, 10, AOVoltageUnits.Volts);
+                obj.ParkTask{i}.Control(TaskAction.Verify);
+                obj.ParkWriter{1} = AnalogMultiChannelWriter(obj.ParkTask{i}.Stream);
+            end
 
             obj.GateTask = NationalInstruments.DAQmx.Task;
             obj.GateTask.DOChannels.CreateChannel(obj.gateline,'',ChannelLineGrouping.OneChannelForEachLine);
@@ -158,6 +167,12 @@ classdef rigClass < dynamicprops
             obj.TriggerTask.Start
             obj.TriggerTask.WaitUntilDone(-1)
             obj.TriggerTask.Stop
+        end
+        
+        function park(obj)
+            for iWriter = 1:numel(obj.ParkWriter)
+                obj.ParkWriter{iWriter}.WriteMultiSample(true, zeros(numel(obj.channelOrder{iWriter}), 2));
+            end
         end
 
         function queueOutputData(obj, scannerOut)
