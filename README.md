@@ -144,7 +144,7 @@ This is, more or less, what `lsmaq` does – plus colored buttons.
 - Resonant scanning. Two possible avenues would be to build on top of Vidriotech's code for NI FPGA-based acquisition or interface fast DAQ cards, e.g. from Alazartech (see [Scanbox](https://scanbox.org/) or [ScanImage B](https://ptrrupprecht.wordpress.com/2016/12/01/matlab-code-for-instrument-control-of-a-resonant-scanning-microscope/))
 
 ## Contributors
-Benjamin Judkewitz, Ioannis Papadopoulos, Spencer Smith, Maximilian Hoffmann
+Benjamin Judkewitz, Ioannis Papadopoulos, Spencer Smith, Maximilian Hoffmann, Diego Di Battista, Malinda Tantirigama
 
 ## See also
 
