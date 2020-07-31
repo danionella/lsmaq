@@ -19,7 +19,7 @@ LSMAQ was created by microscope developers aiming for increased flexibility and 
 ## Installation
 1. Install NI-DAQmx, making sure to include .NET support (tested with version 18.5, earlier versions likely supported)
 2. Clone this repository or copy the contents of this folder to your hard drive.
-3. Open/edit rigClass.m to confirm that is reflects your DAQ hardware and wiring (see below)
+3. Review defaultConfig.m to confirm that is reflects your DAQ hardware and wiring (see below)
 
 ## Wiring
 LSMAQ will flexibly support your custom DAQ card wiring as long as that wiring is configured in defaultConfig.m or your custom configuration file. To make your life easier and minimise the edits needed, we suggest using the following default hardware wiring:
