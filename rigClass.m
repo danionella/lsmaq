@@ -1,30 +1,35 @@
 classdef rigClass < dynamicprops
     %rigClass holds all the variables linked with the setup hardware (Analog I/O channels, triggers etc.)
 
-    properties (Constant) %check these settings. If you are not sure about your device names, check NI MAX Automation explorer
-        AIrate = 1e6;                               % analog input sample rate in Hz
-        AOrate = 1e6/2;                             % analog output sample rate in Hz (has to be divisor of AIrate)
-        AIrange = [-1 1];                           % analog input voltage range (2-element vector)
-        AIchans = '/Dev1/ai0:1';                    % path to AI channels (primary DAQ card)
-        shutterline = '/Dev1/PFI1';                 % path to shutter output line (primary DAQ card)
-        AOchans = {'/Dev1/ao0:1'};                  % cell array of AO channel paths. For a single AO card, this would be a 1-element cell, e.g. {'Dev1/ao0:1'}, for two cards, this could be {'Dev1/ao0:1', 'Dev2/ao0:2'}
-        channelOrder = {[1 2]};                     % cell array of signal to channel assignments. Assign [X,Y,Z,Blank,Phase] signals (in that order, 1-based indexing) to output channels. To assign X to the first output channel, Y to the second, blank to the first of the second card and Z to the second of the second card, use {[1 2], [4 3]}. For a single output card, this could be e.g. {[1 2]}
-        pmtPolarity = -1;                           % invert PMT polarity, if needed (value: 1 or -1)
-        gateline = '/Dev1/port0/line0';             % path to digital output of gating/blanking signal
-        stageCreator = @() MP285('COM3', [10 10 25]);   % function that takes no arguments and returns a stage object (containing methods getPos and setPos) or empty
-        powercontrolCreator = [];                       % function that takes no arguments and returns a powercontrol object (containing methods getPos and setPos) or an empty scalar ('@() []')
+    properties (SetAccess=private) %check these settings. If you are not sure about your device names, check NI MAX Automation explorer
+        AIrate                            % analog input sample rate in Hz
+        AOrate                             % analog output sample rate in Hz (has to be divisor of AIrate)
+        AIrange                           % analog input voltage range (2-element vector)
+        AIchans                   % path to AI channels (primary DAQ card)
+        shutterline                 % path to shutter output line (primary DAQ card)
+        AOchans                  % cell array of AO channel paths. For a single AO card, this would be a 1-element cell, e.g. {'Dev1/ao0:1'}, for two cards, this could be {'Dev1/ao0:1', 'Dev2/ao0:2'}
+        channelOrder                     % cell array of signal to channel assignments. Assign [X,Y,Z,Blank,Phase] signals (in that order, 1-based indexing) to output channels. To assign X to the first output channel, Y to the second, blank to the first of the second card and Z to the second of the second card, use {[1 2], [4 3]}. For a single output card, this could be e.g. {[1 2]}
+        pmtPolarity                           % invert PMT polarity, if needed (value: 1 or -1)
+        gateline             % path to digital output of gating/blanking signal
+        stageCreator                          % function that takes no arguments and returns a stage object (containing methods getPos and setPos, e.g. @() MP285('COM3', [10 10 25])) or empty
+        powercontrolCreator                   % function that takes no arguments and returns a powercontrol object (containing methods getPos and setPos) or an empty scalar ('@() []')
     end
-    
+
     properties
-        laserSyncPort = '';                     % leave empty if not syncing, sets SampleClock source of AI and TimeBaseSource of AO object, pulse rate is assumed to be AIRate
+        laserSyncPort                               % leave empty if not syncing, sets SampleClock source of AI and TimeBaseSource of AO object, pulse rate is assumed to be AIRate
+        stage
+        powercontrol
+        isScanning = false;
     end
-    
-    properties
+
+    properties (SetAccess=private)
         AItask
         AIreader
         AIlistener
         AOtask
         AOwriter
+        ParkTask
+        ParkWriter
         TriggerTask
         ShutterTask
         GateTask
@@ -32,16 +37,18 @@ classdef rigClass < dynamicprops
         GateCloseTask
         GateCloseWriter
         ShutterWriter
-        stage
-        powercontrol
-        isScanning = false;
     end
 
     methods
 
         %rigClass constructor
-        function obj = rigClass(fStatus)
-            if nargin < 1
+        function obj = rigClass(rigcfg, fStatus)
+            if nargin >=1
+                for iFn = fieldnames(rigcfg)'
+                    obj.(iFn{1}) = rigcfg.(iFn{1});
+                end
+            end
+            if nargin < 2 || isempty(fStatus)
                 fprintf(1, 'Starting up rig:    ');
                 fStatus = @(fraction, text) fprintf(1, '\b\b\b%02.0f%%', fraction*100);
             end
@@ -99,6 +106,13 @@ classdef rigClass < dynamicprops
                 obj.AOtask{i}.Control(TaskAction.Verify);
                 obj.AOwriter{i} = AnalogMultiChannelWriter(obj.AOtask{i}.Stream);
             end
+            
+            for i = 1:numel(obj.AOchans)
+                obj.ParkTask{i} = NationalInstruments.DAQmx.Task;
+                obj.ParkTask{i}.AOChannels.CreateVoltageChannel(obj.AOchans{1}, '',-10, 10, AOVoltageUnits.Volts);
+                obj.ParkTask{i}.Control(TaskAction.Verify);
+                obj.ParkWriter{1} = AnalogMultiChannelWriter(obj.ParkTask{i}.Stream);
+            end
 
             obj.GateTask = NationalInstruments.DAQmx.Task;
             obj.GateTask.DOChannels.CreateChannel(obj.gateline,'',ChannelLineGrouping.OneChannelForEachLine);
@@ -109,7 +123,7 @@ classdef rigClass < dynamicprops
             obj.GateTask.Triggers.StartTrigger.ConfigureDigitalEdgeTrigger('PFI0', DigitalEdgeStartTriggerEdge.Rising);
             obj.GateTask.Control(TaskAction.Verify);
             obj.GateTaskWriter = DigitalSingleChannelWriter(obj.GateTask.Stream);
-            
+
             obj.GateCloseTask = NationalInstruments.DAQmx.Task;
             obj.GateCloseTask.DOChannels.CreateChannel(obj.gateline,'',ChannelLineGrouping.OneChannelForEachLine);
             obj.GateCloseTask.Control(TaskAction.Verify);
@@ -129,7 +143,7 @@ classdef rigClass < dynamicprops
             if ~isempty(obj.stageCreator)
                 obj.stage = obj.stageCreator();
             end
-            
+
             fStatus(5/6, 'starting up: adding power control...');
             if ~isempty(obj.powercontrolCreator)
                 obj.powercontrol = obj.powercontrolCreator();
@@ -153,6 +167,12 @@ classdef rigClass < dynamicprops
             obj.TriggerTask.Start
             obj.TriggerTask.WaitUntilDone(-1)
             obj.TriggerTask.Stop
+        end
+        
+        function park(obj)
+            for iWriter = 1:numel(obj.ParkWriter)
+                obj.ParkWriter{iWriter}.WriteMultiSample(true, zeros(numel(obj.channelOrder{iWriter}), 2));
+            end
         end
 
         function queueOutputData(obj, scannerOut)
@@ -200,12 +220,12 @@ classdef rigClass < dynamicprops
             % stop everything and cleanup appropriately
             obj.shutterClose;
             delete(obj.AIlistener)
- 
+
             for iTask = [{obj.AItask} obj.AOtask {obj.GateTask}]
                 iTask{1}.Stop
                 iTask{1}.Control(NationalInstruments.DAQmx.TaskAction.Unreserve)
             end
-            
+
             obj.GateCloseWriter.WriteSingleSampleSingleLine(true, false);
 
             obj.isScanning = false;

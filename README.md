@@ -6,7 +6,7 @@ LSMAQ is a lightweight and flexible laser scanning microscope acquisition softwa
 - phase-stepping for wavefront shaping / [deep imaging](https://doi.org/10.1038/nphoton.2016.252)
 
 ## Should I use it?
-Most likely not. If you are an end user of two-photon microscopes, you will probably be well served by existing software packages like [ScanImage](http://scanimage.vidriotechnologies.com). The ScanImage team does a very good job at keeping their software up to date with new developments that most end users are interested in.
+Most likely not. If you are an end user of two-photon microscopes, you will probably be well served by existing software packages like [ScanImage](http://scanimage.vidriotechnologies.com). The ScanImage team does a very good job at keeping their software up to date with new developments that most paying end users are interested in.
 
 To minimize code and maximize flexibility, LSMAQ exposes all scanning parameters, performs few checks on user input and generally assumes that the user knows the hardware limitations of their setup. The LSMAQ team cannot offer support to end users.
 
@@ -22,7 +22,7 @@ LSMAQ was created by microscope developers aiming for increased flexibility and 
 3. Open/edit rigClass.m to confirm that is reflects your DAQ hardware and wiring (see below)
 
 ## Wiring
-LSMAQ will flexibly support your custom DAQ card wiring as long as that wiring is configured in rigClass.m. To make your life easier and minimise the edits needed, we suggest using the following default hardware wiring:
+LSMAQ will flexibly support your custom DAQ card wiring as long as that wiring is configured in defaultConfig.m or your custom configuration file. To make your life easier and minimise the edits needed, we suggest using the following default hardware wiring:
 
 #### Primary DAQ card (e.g. NI USB-6356):
 - PMT inputs: AI ports 0 and 1 (up to 8 input channels supported)
@@ -31,7 +31,7 @@ LSMAQ will flexibly support your custom DAQ card wiring as long as that wiring i
 - Connect USER1 to PFI0 (trigger input)
 - Connect PFI1 to the shutter
 - Optional: wire P0.0 to USER2 and use as laser blanking signal (to laser or Pockels cell)
-- Optional: connect the laser's pulse sync signal to PFI5 (tested with 1 MHz pulse rate)
+- Optional: connect the laser's pulse sync signal to PFI5 (tested with 1 MHz pulse rate). Adjust sample timing with the cable length of PMT signal and laser sync cables (~5 ns/m coax cable)
 
 #### Optional: Secondary DAQ card for additional AO channels (e.g. NI USB-6343):
 - Additional outputs (e.g. to Pockels cell or piezo): AO ports 0, 1, etc
@@ -39,11 +39,9 @@ LSMAQ will flexibly support your custom DAQ card wiring as long as that wiring i
 - Connect USER1 on the primary DAQ card to PFI0 on all cards (trigger signal)
 
 ## Configure / customize
-#### rigClass.m
-Open rigClass.m to make sure the settings reflect your hardware and wiring.
 
-#### defaultProps.m
-This file defines the startup scan and grab properties. You can modify this file or start LSMAQ (section below) to adjust the properties in the UI.
+#### defaultConfig.m
+This file defines the startup scan and grab properties, as well as your hardware configuration. Open this file and review the *rig configuration* section to make sure the settings reflect your hardware and wiring. You can also modify the grab and scan configuration in this file or start LSMAQ (section below) to adjust the properties in the UI.
 
 ## Properties
 
@@ -56,7 +54,7 @@ This file defines the startup scan and grab properties. You can modify this file
 | `stackNumXyz` | 3-element vector. When acquiring slices or tiles, acquire [x y z] slices/tiles along x, y, and z
 | `stackDeltaXyz` | 3-element vector. Slice/tile separation along [x y z]. Example: to take a stack of 50 slices separated by 5 µm along Z, set stackNumXyz to `[1 1 50]` and stackDeltaXyz to `[0 0 5]`. To acquire a tiled volume of two tiles along X, 3 along Y and 50 slices along Z, with an X/Y tile separation of 200 µm, set stackNumXyz to `[2 3 50]` and stackDeltaXyz to `[200 200 5]`.
 | `stackSequence` | 3-character string. Aquire slices and tiles in this order. Example: to first move along Z, then X then Y, set this to 'ZXY' (default).
-| `powerDecayLength` | The power decay length constant in µm. When takin z-stacks, the laser power will be adjusted according to p = p<sub>0</sub>⋅e<sup>(-z/powerDecayLength)</sup>. To disable power adjustment, set to `Inf` (default).
+| `powerDecayLength` | The power decay length constant in µm. When taking z-stacks, the laser power will be adjusted according to p = p<sub>0</sub>⋅e<sup>(-z/powerDecayLength)</sup>. To disable power adjustment, set to `Inf` (default).
 | **Scan properties** | **Description** |
 | `bidirectional` | Toggle bi-directional scanning. `true` or `false`
 | `fillFraction` | Fraction of the line not used for flyback. Recommendation for a standard 1.25 MHz analog input rate: 0.8192 (this is 1024/1250; having 1024 fill samples per 1 ms line makes binning by orders of 2 convenient)
@@ -82,6 +80,8 @@ To control LSMAQ from the command line, use this alternative way to start lsmaq:
 - You can adjust scan and grab properties (`prop.scancfg` and `prop.grabcfg`) using your own code. For example, type `prop.scancfg.zoom = 4` in the matlab prompt. This will immediately adjust the UI. The link is bidirectional. If you change a property in the UI, it will be updated in `prop`.
 - You can start scanning using command-line. Type `data = grabStream(rig, prop, hIm);` to grab data using the configuration in `prop` (this will display data while it is acquired. To run entirely without display, omit the third parameter and type `data = grabStream(rig, prop);`)
 
+To start LSMAQ with custom hardware and/or scan configuration, create a copy of `config/templatecfg.m`, rename it (e.g. `yourcfg.m`) and modify it according to your needs. Then provide the configuration file name (without extension) as an argument: `[rig, prop, hIm] = lsmaq('yourcfg')`
+
 #### Example 1: acquire 5 images at zoom levels 1 to 5
 Start lsmaq with `[rig, prop, hIm] = lsmaq;`. You can use the UI to find a sample area of interest. Stop scanning, then execute this code to loop through zoom levels.
 
@@ -106,10 +106,10 @@ The following examples will illustrate the purpose of these functions, and how t
 
 #### Example 2: command-line acquisition without any graphics
 ```matlab
-%initialize your hardware
-rig = rigClass;
 %load default scan and grab configuration as a structure
-prop = defaultProps;
+[prop, rigcfg] = defaultConfig; % or [prop, rigcfg] = yourcfg
+%initialize your hardware
+rig = rigClass(rigcfg);
 %change configuration as needed, for example:
 prop.grabcfg.nFrames = 10;
 prop.scancfg.nLinesPerFrame = 400;
@@ -122,10 +122,10 @@ data = grabStream(rig, prop);
 Here we will turn the `prop` structure into a `dynamicshell` object. This object will still look and feel a lot like a MATLAB structure (you can read and write its fields in the usual way), with two important differences: First, you can pass the data by reference. Second, there is a simple UI to inspect its fields graphically.
 
 ```matlab
+%load default scan and grab configuration as a structure
+[prop, rigcfg] = defaultConfig; % or [prop, rigcfg] = yourcfg
 %initialize your hardware
-rig = rigClass;
-%load default scan and grab configuration
-prop = defaultProps;
+rig = rigClass(rigcfg);
 %convert the structure into a `dynamicshell` object.
 prop = dynamicshell(prop)
 %inspect the object in a property table
@@ -150,6 +150,7 @@ Benjamin Judkewitz, Ioannis Papadopoulos, Spencer Smith, Maximilian Hoffmann
 
 * [ScanImage](https://vidriotechnologies.com/scanimage/)
 * [SimpleMScanner](https://github.com/tenss/SimpleMScanner/)
-* [ACQ4](https://github.com/acq4/acq4)
 * [PTRRupprecht/Instrument-Control](https://github.com/PTRRupprecht/Instrument-Control)
+* [ACQ4](https://github.com/acq4/acq4)
+* [SciScan](https://sciscan.scientifica.uk.com/)
 * [HelioScan](http://helioscan.github.io/HelioScan/)

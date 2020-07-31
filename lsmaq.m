@@ -1,4 +1,4 @@
-function  [rig, prop, hIm] = lsmaq(userprops)
+function  [rig, prop, hIm] = lsmaq(userConfig)
 %LSMAQ Starts the lsmaq UI and acquisition engine
 
 %create and configure figure
@@ -8,16 +8,14 @@ end
 
 % add prop folder to path
 addpath([fileparts(mfilename('fullpath')) filesep 'prop'])
+addpath([fileparts(mfilename('fullpath')) filesep 'config'])
 
 %get scan, grab and hardware configuration
 if nargin < 1
-    userprops = @defaultProps;
+    userConfig = 'defaultConfig';
 end
-[dp, configlist] = userprops();
-prop = dynamicshell(dp);
-
-% Hardware configurations are added as hidden dynamic properties so that they don't overpopulate the GUI
-%prop.addHiddenProp(loadjson([fileparts(mfilename('fullpath')) filesep 'configs' filesep 'hdwConfig.json']))
+[prop, rigcfg, scanconfigs] = eval(userConfig);
+prop = dynamicshell(prop);
 
 % Property window
 hF = figure;
@@ -27,7 +25,7 @@ hTb = makeToolBar(hF);
 movegui(hF, [5+1, -5]); drawnow
 
 %property inspector (main gui)
-[pph, pt, ptmh, ppc] = prop.inspect(hF);
+[~, pt, ptmh, ppc] = prop.inspect(hF);
 pth = handle(pt);
 set(ppc, 'units', 'pixels', 'Position', [1 1 250 485-21])
 setCustomCellEditor(ptmh, 'grabcfg.dirName', @(dp, button) dp.setValue(['''', uigetdir, '''']));
@@ -36,8 +34,8 @@ setCustomCellEditor(ptmh, 'grabcfg.dirName', @(dp, button) dp.setValue(['''', ui
 statusBar = [];
 updateStatus(NaN, 'starting up...')
 
-%starting rig
-rig = rigClass(@updateStatus);
+rig = rigClass(rigcfg, @updateStatus);
+
 
 %create channel figures
 for i=1:double(rig.AItask.AIChannels.Count)
@@ -63,8 +61,8 @@ updateStatus(0, 'ready to go!')
         hTb.Zstack = uitoggletool(hTb.Tb, 'CData', icons.stacks_blue, 'Separator', 'on', 'TooltipString', 'Acquire Stack/Tiles', 'ClickedCallback', @startZStack, 'offCallback', @stopScanning, 'enable', 'on');
 
         hTb.ScanCfg = uisplittool(hTb.Tb, 'CData', icons.scan, 'Separator', 'on', 'TooltipString', 'Scan Configuration', 'enable', 'on');
-        for iFn = fieldnames(configlist)'
-            uimenu(hTb.ScanCfg,'Text',iFn{1}, 'MenuSelectedFcn', @(varargin) setprops(configlist.(iFn{1})));
+        for iFn = fieldnames(scanconfigs)'
+            uimenu(hTb.ScanCfg,'Text',iFn{1}, 'MenuSelectedFcn', @(varargin) setprops(scanconfigs.(iFn{1})));
         end
         function setprops(cfg)
             for jFn = fieldnames(cfg)'
@@ -74,8 +72,8 @@ updateStatus(0, 'ready to go!')
     end
 
 % Starts the free-running focusing
-    function startFocus(hObj, ~)
-        warning('off', 'daq:Session:tooFrequent')
+    function startFocus(~, ~)
+        %warning('off', 'daq:Session:tooFrequent')
         stopEditing
         %updateStatus(NaN, 'focussing...');
         set([hTb.Grab hTb.Zstack hTb.ScanCfg], 'enable', 'off')
@@ -83,38 +81,47 @@ updateStatus(0, 'ready to go!')
         channelAspRatio(hIm, rig, prop)
         try
             grabStream(rig, prop, hIm, @updateStatus);
-        catch
-            warning(lasterr)
+            updateStatus(0, 'ready to go!');
+        catch ME
+            warning(ME.identifier, '%s', ME.message)
+            stopScanning()
+            updateStatus(0, ME.message);
         end
-        set([hTb.Grab hTb.Focus], 'enable', 'on', 'state', 'off');
+        set([hTb.Grab hTb.Focus hTb.Zstack], 'enable', 'on', 'state', 'off');
         set([hTb.ScanCfg], 'enable', 'on')
-        if ~isempty(rig.stage.hPort) set(hTb.Zstack, 'enable', 'on', 'state', 'off'); end
         if restartFocus, restartFocus = false; pause(0.1), set(hTb.Focus, 'state', 'on'); end
-        updateStatus(0, 'ready to go!');
+
         pth.Enabled = true;
     end
 
 % Starts grabbing
-    function startGrab(hObj, ~)
+    function startGrab(~, ~)
         fn = sprintf('%s%s%s%04.0f.mat', prop.grabcfg.dirName, filesep, prop.grabcfg.fileBaseName, prop.grabcfg.fileNumber);
         if exist(fn, 'file'), warndlg('file exists'), return, end
         stopEditing
         isAcquiring = true;
         set([hTb.Focus hTb.Zstack hTb.ScanCfg], 'enable', 'off')
-        channelAspRatio(hIm, rig, prop);tic
-        data = grabStream(rig, prop, hIm, @updateStatus);toc
-        config = prop.tostruct;
-        save(fn, 'data', 'config', '-v7.3');
-        fprintf('Saved to file %s \n', fn);
-        set([hTb.Grab hTb.Focus], 'enable', 'on', 'state', 'off');
+        channelAspRatio(hIm, rig, prop);
+        try
+            tic
+            data = grabStream(rig, prop, hIm, @updateStatus);
+            toc
+            config = prop.tostruct;
+            save(fn, 'data', 'config', '-v7.3');
+            fprintf('Saved to file %s \n', fn);
+            updateStatus(0, 'ready to go!')
+        catch ME
+            warning(ME.identifier, '%s', ME.message)
+            stopScanning()
+            updateStatus(0, ME.message)
+        end
+        set([hTb.Grab hTb.Focus hTb.Zstack], 'enable', 'on', 'state', 'off');
         set([hTb.ScanCfg], 'enable', 'on')
-        if ~isempty(rig.stage.hPort) set(hTb.Zstack, 'enable', 'on', 'state', 'off'); end
         prop.grabcfg.fileNumber = prop.grabcfg.fileNumber + 1;
-        updateStatus(0, 'ready to go!')
         pth.Enabled = true;
     end
 
-    function startZStack(hObj, ~)
+    function startZStack(~, ~)
         fn = sprintf('%s%s%s%04.0f.mat', prop.grabcfg.dirName, filesep, prop.grabcfg.fileBaseName, prop.grabcfg.fileNumber);
         if exist(fn, 'file'), warndlg('file exists'), return, end
         stopEditing
@@ -138,7 +145,7 @@ updateStatus(0, 'ready to go!')
             data = grabStream(rig, prop, hIm, @updateStatus);
             if iSlice == 1
                 sz = size(data); sz(end+1:4) = 1; sz(5) = nSlices;
-                mm = matmap(fn, '/data', sz, 'int16', [sz(1:2)]);
+                mm = matmap(fn, '/data', sz, 'int16', sz(1:2));
             end
             mm(:,:,:,:,iSlice) = data;
         end
@@ -170,14 +177,19 @@ updateStatus(0, 'ready to go!')
     end
 
     function CloseRequestFcn(hF, ~)
-        try close(hChanF), rig.shutterClose, end
-        %       rig.stopAndCleanup(1);
+        try
+            rig.stopAndCleanup()
+        catch ME
+            warning(ME.identifier, '%s', ME.message)
+        end
         delete(hF)
+        delete(hChanF)
         delete(rig.stage)
+        %CHECK IF THIS IS REALLY NECCESSARY:
         daqreset
     end
 
-    function mouseWheelCb(hObj, event)
+    function mouseWheelCb(~, event)
         %changes zoom
         if isAcquiring, return, end
         scrollCount = -event.VerticalScrollCount;
