@@ -109,9 +109,9 @@ classdef rigClass < dynamicprops
             
             for i = 1:numel(obj.AOchans)
                 obj.ParkTask{i} = NationalInstruments.DAQmx.Task;
-                obj.ParkTask{i}.AOChannels.CreateVoltageChannel(obj.AOchans{1}, '',-10, 10, AOVoltageUnits.Volts);
+                obj.ParkTask{i}.AOChannels.CreateVoltageChannel(obj.AOchans{i}, '',-10, 10, AOVoltageUnits.Volts);
                 obj.ParkTask{i}.Control(TaskAction.Verify);
-                obj.ParkWriter{1} = AnalogMultiChannelWriter(obj.ParkTask{i}.Stream);
+                obj.ParkWriter{i} = AnalogMultiChannelWriter(obj.ParkTask{i}.Stream);
             end
 
             obj.GateTask = NationalInstruments.DAQmx.Task;
@@ -171,6 +171,7 @@ classdef rigClass < dynamicprops
         
         function park(obj)
             for iWriter = 1:numel(obj.ParkWriter)
+                obj.channelOrder{iWriter}
                 obj.ParkWriter{iWriter}.WriteMultiSample(true, zeros(numel(obj.channelOrder{iWriter}), 2));
             end
         end
@@ -227,6 +228,7 @@ classdef rigClass < dynamicprops
             end
 
             obj.GateCloseWriter.WriteSingleSampleSingleLine(true, false);
+            obj.park();
 
             obj.isScanning = false;
         end
