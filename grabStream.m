@@ -7,7 +7,7 @@ function [data, scannerOut] = grabStream(rig, prop, hIm, fStatus, fStripe)
 %       <grabcfg>   grab configuration structure
 %       <hIm>       Handle of an image for online data display. EraseMode
 %                   should be 'none'.
-%       <fStatus>   (optional) Function handle of status update function
+%       <fStatus>   (optional) Function handle of status function
 %                   which is called by grabStream to e.g. update status
 %                   text information. Arguments: fStatus(percent, text).
 %       <fStripe>   (optional) Handle of a fucntion that is being called
@@ -99,7 +99,7 @@ rig.isScanning = false;
     % NESTED FUNCTIONS
     function samplesAcquiredFun(raw)
         nCurrentFrame = floor(iAcquiredLines / scancfg.nLinesPerFrame) + 1;
-        if ~rig.isScanning || (isGrabbing && (nCurrentFrame > grabcfg.nFrames)) , rig.isScanning = false; pause(0), return, end
+        if ~rig.isScanning || (isGrabbing && (nCurrentFrame > grabcfg.nFrames*scancfg.piezoStepsN)) , rig.isScanning = false; pause(0), return, end
 
         %%GET RAW DATA , SHAPE INTO IMAGE
         %raw = event.Data;
